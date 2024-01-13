@@ -61,8 +61,26 @@ const loadtutor=async(req,res)=>{
         console.log(err);
     }
 }
+
+const blockuser=async(req,res)=>{
+    try{
+        let id=req.body._id
+        console.log(id,'id');
+      const newData=await UserDb.updateOne({_id:id},{$set:{is_Active:false}})
+      res.json({
+        newData,
+        status:true,
+        alert:'User Bloked'
+      })
+
+
+    }catch(err){
+        console.log(err);
+    }
+}
 module.exports={
     loadloagin,
     loaduser,
-    loadtutor
+    loadtutor,
+    blockuser
 }

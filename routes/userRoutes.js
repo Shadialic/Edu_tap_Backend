@@ -18,4 +18,5 @@ userRouter.put('/updateaPass',userController.updatePass)
 
 
 
+
 module.exports=userRouter;

@@ -32,7 +32,7 @@ const adduser = async (req, res) => {
       const saveUserData = await users.save();
       return res.status(201).json({
         saveUserData,
-        alert: "registration",
+        alert: "verify your email",
         status: true,
       });
     }
@@ -45,9 +45,6 @@ const adduser = async (req, res) => {
 const sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
-    console.log(email, "emailemail");
-    console.log(req.body, "emailemail");
-
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
@@ -65,7 +62,7 @@ const sendOTP = async (req, res) => {
     const otpBody = await OTP.create(otpPayload);
     res.status(200).json({
       success: true,
-      message: "OTP sent successfully",
+      alert: "OTP sent successfully",
       otp,
     });
   } catch (error) {
@@ -117,7 +114,8 @@ const verifyLogin = async (req, res) => {
       console.log(compared, "compared");
 
       if (compared) {
-        if (exist.is_Active) {
+        console.log(exist.is_Active);
+        if (exist.is_Active!=true){
           console.log("ooooo");
           const token = jwt.sign(
             { userId: exist._id },

@@ -60,22 +60,13 @@ const addTutor = async (req, res) => {
     const existingUser = await Tutor.findOne({ email: email });
     console.log(existingUser, "existingUser");
     if (existingUser) {
-      return res.status(400).json({
+      res.json({
         alert: "email already exists",
         success: false,
         status: false,
       });
     }
-    // Find the most recent OTP for the email
 
-    // const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
-    // if (response.length === 0 || otp !== response[0].otp) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     alert: 'The OTP is not valid',
-    //     status:false
-    //   });
-    // }
     // Secure password
     let hashedPassword;
     try {
@@ -95,18 +86,9 @@ const addTutor = async (req, res) => {
       role,
     });
 
-    // const saveTutorData = await Tutors.save();
-    // const token = jwt.sign(
-    //   {
-    //     tutoId: saveTutorData._id,
-    //   },
-    //   process.env.JWT_SECRET_KEY,
-    //   { expiresIn: "1h" }
-    // );
     return res.status(201).json({
-      // token,
       success: true,
-      alert: "User registered successfully",
+      alert: "please verify your mail",
       newTutor,
       status: true,
     });
@@ -119,15 +101,6 @@ const addTutor = async (req, res) => {
 const sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
-    // Check if user is already present
-    // const checkUserPresent = await Tutor.findOne({ email });
-    // If user found with provided email
-    // if (checkUserPresent) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: 'User is already registered',
-    //   });
-    // }
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
@@ -169,21 +142,17 @@ const verifyOTP = async (req, res) => {
       tutor.save();
 
       return res.status(200).json({
-        // token,
         success: true,
         alert: "User Activated successfully",
         tutor,
         status: true,
       });
-      // Handle the case where the user is found
     } else {
       console.log("User not found");
-      // Handle the case where the user is not found
       return res.status(400).json({ success: false, alert: "wrong Otp" });
     }
   } catch (error) {
     console.error("Error while checking for user:", error);
-    // Handle the error appropriately
   }
 };
 
