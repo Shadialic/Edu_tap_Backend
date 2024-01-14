@@ -1,86 +1,114 @@
 const UserDb = require("../models/userModel");
-const TutorDb=require('../models/tutorModel')
-const bycrypt=require('bcrypt');
+const TutorDb = require("../models/tutorModel");
+const bycrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const mongoose = require('mongoose');
 
-const loadloagin=async (req,res)=>{
-    try{
-        const {credential,password}=req.body;
-        console.log(req.body,'eq.body');
-        const exist=await UserDb.findOne({email:credential});
-        console.log(exist,'exist');
-        if(exist){
-            if(exist.is_admin){
-                const compared=await bycrypt.hash(password,exist.password);
-                if(compared){
-                    const admintoken=jwt.sign({
-                        adminId:exist._id},
-                        process.env.JWT_SECRET_KEY,{
-                            expiresIn:'1h'
-                        }
-                    );
-                    res.json({loginData:exist,status:true,admintoken})
-                }else{
-                    res.json({alert:'Enterd email is wrong!'})
-                }
-            }else{
-                res.json({alert:"Not valid admin"})
+
+const loadloagin = async (req, res) => {
+  try {
+    const { credential, password } = req.body;
+    console.log(req.body, "eq.body");
+    const exist = await UserDb.findOne({ email: credential });
+    console.log(exist, "exist");
+    if (exist) {
+      if (exist.is_admin) {
+        const compared = await bycrypt.hash(password, exist.password);
+        if (compared) {
+          const admintoken = jwt.sign(
+            {
+              adminId: exist._id,
+            },
+            process.env.JWT_SECRET_KEY,
+            {
+              expiresIn: "1h",
             }
-        }else{
-            res.json({alert:'Email is not existing'})
-        }
-    }catch(err){
-        console.log(err);
-    }
-}
-
-const loaduser=async(req,res)=>{
-    try{
-        const userdata = await UserDb.find({ is_admin: false });
-        if (userdata) {
-          res.json({ userdata, status: true });
+          );
+          res.json({ loginData: exist, status: true, admintoken });
         } else {
-          res.json({ userdata, status: false });
+          res.json({ alert: "Enterd email is wrong!" });
         }
-
-    }catch(err){
-        console.log(err);
+      } else {
+        res.json({ alert: "Not valid admin" });
+      }
+    } else {
+      res.json({ alert: "Email is not existing" });
     }
-}
+  } catch (err) {
+    console.log(err);
+  }
+};
 
-const loadtutor=async(req,res)=>{
-    try{
-        const tutordata = await TutorDb.find();
-        if (tutordata) {
-          res.json({ tutordata, status: true });
+const loaduser = async (req, res) => {
+  try {
+    const userdata = await UserDb.find({ is_admin: false });
+    if (userdata) {
+      res.json({ userdata, status: true });
+    } else {
+      res.json({ userdata, status: false });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const loadtutor = async (req, res) => {
+  try {
+    const tutordata = await TutorDb.find();
+    if (tutordata) {
+      res.json({ tutordata, status: true });
+    } else {
+      res.json({ tutordata, status: false });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const blockuser = async (req, res) => {
+    try {
+        let id = req.body._id;
+        console.log(id, "id");
+        
+        // Convert the string id to ObjectId
+        const objectId = new mongoose.Types.ObjectId(id);
+
+        // Use the objectId to find the user
+        let user = await UserDb.findOne({ _id: objectId });
+        console.log(user, "@@@@@@@@@@@@@@@@");
+
+        if (user.is_Active == "true") {
+            const newData = await UserDb.updateOne(
+                { _id: objectId },
+                { $set: { is_Active: false } }
+            );
+            res.json({
+                newData,
+                status: true,
+                alert: "User Blocked",
+            });
         } else {
-          res.json({ tutordata, status: false });
+            const newData = await UserDb.updateOne(
+                { _id: objectId },
+                { $set: { is_Active: true } }
+            );
+            res.json({
+                newData,
+                status: true,
+                alert: "Unblocked User",
+            });
         }
-
-    }catch(err){
+    } catch (err) {
         console.log(err);
+        res.status(500).json({ alert: "Internal Server Error" });
     }
-}
+};
 
-const blockuser=async(req,res)=>{
-    try{
-        let id=req.body._id
-        console.log(id,'id');
-      const newData=await UserDb.updateOne({_id:id},{$set:{is_Active:false}})
-      res.json({
-        newData,
-        status:true,
-        alert:'User Bloked'
-      })
+  
 
-
-    }catch(err){
-        console.log(err);
-    }
-}
-module.exports={
-    loadloagin,
-    loaduser,
-    loadtutor,
-    blockuser
-}
+module.exports = {
+  loadloagin,
+  loaduser,
+  loadtutor,
+  blockuser,
+};

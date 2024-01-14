@@ -160,10 +160,10 @@ const verifyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log(req.body, "llllll");
-    const exist = await User.findOne({ email: email });
+    const exist = await Tutor.findOne({ email: email });
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
-      if (is_Actived == true) {
+      if (exist.is_Actived) {
         if (compared) {
           let token = jwt.sign(
             { userId: exist._id },

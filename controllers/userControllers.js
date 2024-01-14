@@ -114,8 +114,11 @@ const verifyLogin = async (req, res) => {
       console.log(compared, "compared");
 
       if (compared) {
-        console.log(exist.is_Active);
-        if (exist.is_Active!=true){
+        console.log(typeof(exist.is_Active),'ppp')
+        console.log(exist.is_Active,'ppp')
+
+
+        if (exist.is_Active=="true"){
           console.log("ooooo");
           const token = jwt.sign(
             { userId: exist._id },
