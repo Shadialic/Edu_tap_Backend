@@ -3,8 +3,11 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const OTP = require("../models/otpModel");
 const otpGenerator = require("otp-generator");
+const { createSecretToken } = require("../utils/SecretToken");
+const multer=require('multer')
+const path=require('path')
+const {v4:uuidv4} =require('uuid')
 
-// const OTPGen=require('../controllers/otpController')
 
 const securePassword = async (password) => {
   try {
@@ -17,58 +20,34 @@ const securePassword = async (password) => {
 
 const addTutor = async (req, res) => {
   try {
-    // const { tutorName, email, phone, password } = req.body;
-    // const spassword = await securePassword(password);
-    // const exist = await Tutor.findOne({ email: email });
-    // if (exist) {
-    //   res.json({ alert: "Email Already Exist", status: false });
-    // } else {
-    //   const Tutors = new Tutor({
-    //     tutorName: tutorName,
-    //     email: email,
-    //     password: spassword,
-    //     phone: phone,
-    //   });
-
-    //   const saveTutorData = await Tutors.save();
-    //   const token = jwt.sign(
-    //     {
-    //       tutoId: saveTutorData._id,
-    //     },
-    //     process.env.JWT_SECRET_KEY,
-    //     { expiresIn: "1h" }
-    //   );
-
-    //   res.json({
-    //     token,
-    //     saveTutorData,
-    //     status: true,
-    //     alert: "registration",
-    //   });
-    // }
-    const { tutorName, email, password, phone, role, otp } = req.body;
-
+    const { tutorName, email, password, phone, role } = req.body;
+   const image= req.file.path
+    console.log('Image uploaded:', image);
     console.log(req.body, "lll");
+    
     // Check if all details are provided
-    if (!tutorName || !email || !password || !phone) {
+    if (!tutorName || !email || !password || !phone||!image) {
       return res.status(403).json({
         status: false,
         alert: "All fields are required",
       });
     }
+
     // Check if user already exists
     const existingUser = await Tutor.findOne({ email: email });
     console.log(existingUser, "existingUser");
+    
     if (existingUser) {
-      res.json({
+      return res.json({
         alert: "email already exists",
         success: false,
         status: false,
       });
     }
-
+    
     // Secure password
     let hashedPassword;
+    
     try {
       hashedPassword = await bcrypt.hash(password, 10);
     } catch (error) {
@@ -78,12 +57,14 @@ const addTutor = async (req, res) => {
         status: false,
       });
     }
+    
     const newTutor = await Tutor.create({
       tutorName,
       email,
       phone,
       password: hashedPassword,
       role,
+      image
     });
 
     return res.status(201).json({
@@ -97,6 +78,7 @@ const addTutor = async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 };
+
 
 const sendOTP = async (req, res) => {
   try {
@@ -138,18 +120,18 @@ const verifyOTP = async (req, res) => {
     if (checkUserPresent) {
       const tutor = await Tutor.findOne({ email: checkUserPresent.email });
       console.log(tutor, "tutor");
-      tutor.is_Actived = true;
-      tutor.save();
+      // tutor.is_Actived = true;
+      // tutor.save();
 
       return res.status(200).json({
         success: true,
-        alert: "User Activated successfully",
+        alert: "Tutor signup successful. Please wait for admin approval before logging in. ",
         tutor,
         status: true,
       });
     } else {
       console.log("User not found");
-      return res.status(400).json({ success: false, alert: "wrong Otp" });
+      return res.json({ status: false, alert: "wrong Otp" });
     }
   } catch (error) {
     console.error("Error while checking for user:", error);
@@ -161,26 +143,37 @@ const verifyLogin = async (req, res) => {
     const { email, password } = req.body;
     console.log(req.body, "llllll");
     const exist = await Tutor.findOne({ email: email });
+    console.log(exist, "--1-1-1-1-");
+
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
-      if (exist.is_Actived) {
+      if (exist.is_Actived=="true") {
         if (compared) {
-          let token = jwt.sign(
-            { userId: exist._id },
-            process.env.JWT_SECRET_KEY,
-            {
-              expiresIn: "1h",
-            }
-          );
+          console.log('ss');
+          // let token = jwt.sign(
+          //   { userId: exist._id },
+          //   process.env.JWT_SECRET_KEY,
+          //   {
+          //     expiresIn: "1h",
+          //   }
+          // );
+          const token = createSecretToken(exist._id);
+          res.cookie("token", token, {
+            withCredentials: true,
+            httpOnly: false,
+          });
           res.json({
             tutorData: exist,
             status: true,
             err: null,
             token,
+            alert:'Tutor SignIn successfully Compleated'
           });
         } else {
           res.json({ alert: "Enter password is incorrect !" });
         }
+      }else{
+        res.json({alert:'Please wait for admin approval before logging in'});
       }
     } else {
       res.json({ alert: "Email not Exist !" });
@@ -189,6 +182,44 @@ const verifyLogin = async (req, res) => {
     console.log(err);
   }
 };
+const gooleRegister=async(req,res)=>{
+  try{
+    const {id,name,email,phone}=req.body;
+    console.log(req.body,'pppppdpdpdpdpdpdpdp');
+    const exist=await Tutor.findOne({email:email})
+    if (exist) {
+      return res.json({
+        alert: "Email already exists.",
+      });
+    }
+    const passwordHash=await securePassword(id);
+    const GoogleTutor=new Tutor({
+      tutorName:name,
+      email,
+      password:passwordHash,
+      phone:phone ||'0000000000',
+     
+    })
+    const tutorData=await GoogleTutor.save();
+    if (tutorData) {
+      const token = createSecretToken(tutorData._id);
+      res.cookie("token", token, {
+        withCredentials: true,
+        httpOnly: false,
+      });
+
+      if (token) {
+        return res.status(200).json({
+          created: true,
+          alert: "Google registration successful",
+          token,
+        });
+      }
+    }
+  }catch(error){
+    console.log(error);
+  }
+}
 
 module.exports = {
   securePassword,
@@ -196,4 +227,7 @@ module.exports = {
   sendOTP,
   verifyOTP,
   verifyLogin,
+  gooleRegister,
+
+
 };

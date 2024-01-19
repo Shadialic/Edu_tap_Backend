@@ -30,7 +30,18 @@ const userSchema=mongoose.Schema({
       is_admin:{
         type: String,
         default: false,
-      }
+      },
+      googleId:{
+        type: String,
+
+      },
+      secret:{
+        type: String,
+      },
+      createdAt: {
+        type: Date,
+        default: new Date(),
+      },
 })
 const user = mongoose.model("User", userSchema);
 module.exports = user;

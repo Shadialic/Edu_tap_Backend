@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const OTP = require("../models/otpModel");
 const otpGenerator = require("otp-generator");
+const { createSecretToken } = require("../utils/SecretToken");
 
 const securePassword = async (password) => {
   try {
@@ -23,6 +24,8 @@ const adduser = async (req, res) => {
     if (exist) {
       res.json({ alert: "email already exists", status: false });
     } else {
+    console.log(exist, "hhhhh");
+
       const users = new User({
         userName: name,
         email: credential,
@@ -30,10 +33,16 @@ const adduser = async (req, res) => {
         password: spassword,
       });
       const saveUserData = await users.save();
+      const token = createSecretToken(saveUserData._id);
+      res.cookie("token", token, {
+        withCredentials: true,
+        httpOnly: false,
+      });
       return res.status(201).json({
         saveUserData,
-        alert: "verify your email",
+        alert: "please verify your email",
         status: true,
+        token
       });
     }
   } catch (err) {
@@ -95,13 +104,14 @@ const userverifyOTP = async (req, res) => {
     } else {
       console.log("User not found");
       // Handle the case where the user is not found
-      return res.status(400).json({ success: false, alert: "wrong Otp" });
+      return res.json({ status: false, alert: "wrong Otp" });
+
     }
   } catch (error) {
     console.error("Error while checking for user:", error);
     // Handle the error appropriately
   }
-}; 
+};
 
 const verifyLogin = async (req, res) => {
   try {
@@ -109,35 +119,52 @@ const verifyLogin = async (req, res) => {
     console.log(req.body, "llllll");
     const exist = await User.findOne({ email: credential });
     console.log(exist, "exist");
+
     if (exist) {
-      const compared = await bcrypt.compare(password, exist.password);
-      console.log(compared, "compared");
+      // Check if both `password` and `exist.password` are defined
+      if (password && exist.password) {
+        const compared = await bcrypt.compare(password, exist.password);
+        console.log(compared, "compared");
 
-      if (compared) {
-        console.log(typeof(exist.is_Active),'ppp')
-        console.log(exist.is_Active,'ppp')
+        if (compared) {
+          console.log(typeof exist.is_Active, "ppp");
+          console.log(exist.is_Active, "ppp");
 
-
-        if (exist.is_Active=="true"){
-          console.log("ooooo");
-          const token = jwt.sign(
-            { userId: exist._id },
-            process.env.JWT_SECRET_KEY,
-            {
-              expiresIn: "1h",
+          // Check if exist.is_Active is a boolean
+          if ( exist.is_Active =="true") {
+            if (exist.is_Active) {
+              console.log("ooooo");
+              // const token = jwt.sign(
+              //   { userId: exist._id },
+              //   process.env.JWT_SECRET_KEY,
+              //   {
+              //     expiresIn: "1h",
+              //   }
+              // );
+              const token = createSecretToken(exist._id);
+              res.cookie("token", token, {
+                withCredentials: true,
+                httpOnly: false,
+              });
+              console.log(token, "uuu");
+              res.json({
+                userData: exist,
+                status: true,
+                err: null,
+                token,
+              });
+            } else {
+              res.json({ alert: "User account is not active." });
             }
-          );
-          res.json({
-            userData: exist,
-            status: true,
-            err: null,
-            token,
-          });
+          } else {
+            // Handle the case where exist.is_Active is not a boolean
+            res.json({ alert: "Invalid is_Active value." });
+          }
         } else {
-          res.json({ alert: "User account is not active." });
+          res.json({ alert: "Entered password is incorrect!" });
         }
       } else {
-        res.json({ alert: "Entered password is incorrect!" });
+        res.json({ alert: "Password or existing password is undefined!" });
       }
     } else {
       res.json({ alert: "Email not found!" });
@@ -148,10 +175,12 @@ const verifyLogin = async (req, res) => {
   }
 };
 
+
+
 const forgotPass = async (req, res) => {
   try {
     let { email } = req.body;
-  
+
     console.log(email, "userMail");
     const userExists = await User.findOne({ email });
     console.log(userExists, "userMail");
@@ -175,7 +204,6 @@ const forgotPass = async (req, res) => {
     const otpPayload = { email, otp };
     const otpBody = await OTP.create(otpPayload);
     res.status(201).json({
-      
       success: true,
       message: "OTP sent successfully",
       otp,
@@ -214,32 +242,84 @@ const passverifyOTP = async (req, res) => {
     console.error("Error while checking for user:", error);
     // Handle the error appropriately
   }
-}; 
+};
 
-
-const updatePass=async(req,res)=>{
-  try{
-    const email = req.body.email; 
+const updatePass = async (req, res) => {
+  try {
+    const email = req.body.email;
     const password = req.body.password;
-    console.log(email,'888888');
-    console.log(password,'11111111');
+    console.log(email, "888888");
+    console.log(password, "11111111");
 
-    
     const hashPass = await securePassword(password);
-    const newData=await User.updateOne({ email: email }, { $set: { password: hashPass } });
-    console.log(newData,'newData');
+    const newData = await User.updateOne(
+      { email: email },
+      { $set: { password: hashPass } }
+    );
+    console.log(newData, "newData");
 
     res.status(200).json({
-      status:200,
+      status: 200,
       newData,
-      alert:'successfully compleated'
-    })
-
-
-  }catch(err){
+      alert: "successfully compleated",
+    });
+  } catch (err) {
     console.log(err);
   }
-}
+};
+
+const googleRegister = async (req, res) => {
+  try {
+    const { id, name, email, phone } = req.body;
+    console.log(req.body);
+
+    const exist = await User.findOne({ email: email });
+
+    if (exist) {
+      return res.json({
+        alert: "Email already exists.",
+      });
+    } else {
+      // Assuming securePassword returns a Promise
+      const hashPassword = await securePassword(id);
+
+      const googleUser = new User({
+        userName: name,
+        email,
+        phone: phone || "000000000000",
+        password: hashPassword,
+        is_google: true,
+        is_Active: true,
+      });
+
+      const userData = await googleUser.save();
+
+      // Log the message only when the user registration is successful
+      console.log(userData, "User registered");
+
+      if (userData) {
+        const token = createSecretToken(userData._id);
+        res.cookie("token", token, {
+          withCredentials: true,
+          httpOnly: false,
+        });
+
+        if (token) {
+          return res.status(200).json({
+            created: true,
+            alert: "Google registration successful",
+            token,
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    // Handle errors and return an appropriate response to the client
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 module.exports = {
   adduser,
@@ -249,5 +329,6 @@ module.exports = {
   userverifyOTP,
   forgotPass,
   passverifyOTP,
-  updatePass
+  updatePass,
+  googleRegister
 };
