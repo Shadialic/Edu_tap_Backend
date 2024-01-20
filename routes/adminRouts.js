@@ -8,6 +8,8 @@ adminRouter.post('/loadtutor',adminController.loadtutor)
 adminRouter.put('/blockuser',adminController.blockuser)
 adminRouter.put('/blocktutor',adminController.blocktutor)
 adminRouter.put('/approvTutor',adminController.approveTutor)
+adminRouter.post('/ManageCategory',adminController.addCategory)
+
 
 
 

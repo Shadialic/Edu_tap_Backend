@@ -1,5 +1,6 @@
 const UserDb = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
+const Category=require('../models/categoruModel')
 const bycrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -159,6 +160,24 @@ const approveTutor = async (req, res) => {
     console.log(err);
   }
 };
+const addCategory=async=(req,res)=>{
+  try{
+    const category=req.body;
+    const data=new Category({
+      category
+    })
+    data.save();
+    res.json({
+   status:true,
+   data,
+   alert:'category added SeccessFully'
+    })
+
+
+  }catch(err){
+    console.log(err);
+  }
+}
 
 module.exports = {
   loadloagin,
@@ -166,5 +185,6 @@ module.exports = {
   loadtutor,
   blockuser,
   blocktutor,
-  approveTutor
+  approveTutor,
+  addCategory
 };
