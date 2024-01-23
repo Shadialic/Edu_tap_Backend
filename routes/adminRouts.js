@@ -8,7 +8,11 @@ adminRouter.post('/loadtutor',adminController.loadtutor)
 adminRouter.put('/blockuser',adminController.blockuser)
 adminRouter.put('/blocktutor',adminController.blocktutor)
 adminRouter.put('/approvTutor',adminController.approveTutor)
-adminRouter.post('/ManageCategory',adminController.addCategory)
+adminRouter.post('/addCategory',adminController.addCategory)
+adminRouter.get('/getCategory',adminController.loadCategory)
+adminRouter.get('/getCourse',adminController.loadCourse)
+
+
 
 
 

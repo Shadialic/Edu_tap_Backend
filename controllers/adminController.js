@@ -1,6 +1,7 @@
 const UserDb = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
-const Category=require('../models/categoruModel')
+const  Category= require("../models/courseCategory")
+const CourseDb=require("../models/courseModel")
 const bycrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -144,40 +145,63 @@ const blocktutor = async (req, res) => {
 const approveTutor = async (req, res) => {
   try {
     let id = req.body._id;
-    console.log(id,'ssa');
     const objectId = new mongoose.Types.ObjectId(id);
-    console.log(objectId,'ssssssss');
-
-    const tutorData = await TutorDb.findById({ _id:objectId });
+    const tutorData = await TutorDb.findById({ _id: objectId });
     console.log(tutorData);
-    if(tutorData){
+    if (tutorData) {
       tutorData.is_Actived = "true";
       tutorData.save();
-      console.log(tutorData,'after');
+      console.log(tutorData, "after");
       res.status(200).json({ tutorData, alert: "approved tutor" });
     }
   } catch (err) {
     console.log(err);
   }
 };
-const addCategory=async=(req,res)=>{
-  try{
-    const category=req.body;
-    const data=new Category({
-      category
-    })
-    data.save();
+const addCategory = async (req,res) => {
+  try {
+    const { categoryname } = req.body;
+    console.log(categoryname, '=========');
+
+    const newCategory = new Category({
+      categoryName:categoryname,
+    });
+    const savedCategory = await newCategory.save();
     res.json({
-   status:true,
-   data,
-   alert:'category added SeccessFully'
-    })
+      status: true,
+      category: savedCategory, 
+      alert: "Category added successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: false,
+      error: "Internal server error Lotta",
+    });
+  }
+};
 
-
+const loadCategory=async(req,res)=>{
+  try{
+    const data=await Category.find()
+  console.log(data,'odi');
+    res.json({data})
   }catch(err){
     console.log(err);
   }
 }
+const loadCourse=async(req,res)=>{
+  try{
+    const data=await CourseDb.find()
+  console.log(data,'odi');
+    res.json({data})
+  }catch(err){
+    console.log(err);
+  }
+}
+
+
+
 
 module.exports = {
   loadloagin,
@@ -186,5 +210,7 @@ module.exports = {
   blockuser,
   blocktutor,
   approveTutor,
-  addCategory
+  addCategory,
+  loadCategory,
+  loadCourse
 };
