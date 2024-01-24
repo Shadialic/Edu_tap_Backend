@@ -9,6 +9,7 @@ vendorRouter.post('/vendor/verifyotp',vendorController.verifyOTP);
 vendorRouter.post('/vendor/login',vendorController.verifyLogin)
 vendorRouter.post('/vendor/tutorRegisterWithGoole',vendorController.gooleRegister)
 vendorRouter.post('/vendor/loadCourse',uploadImage.single('image'),CourseController.addCourse)
+vendorRouter.get('/vendor/getCategory',vendorController.getCategory)
 
 
 

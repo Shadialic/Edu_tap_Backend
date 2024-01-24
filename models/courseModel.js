@@ -20,6 +20,10 @@ const CourseSchema=new mongoose.Schema({
     },
     image:{
         type:String
+    },
+    is_varified:{
+        type:String,
+        default:false
     }
 })
 const Course=mongoose.model('Course',CourseSchema);

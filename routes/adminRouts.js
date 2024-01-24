@@ -11,6 +11,8 @@ adminRouter.put('/approvTutor',adminController.approveTutor)
 adminRouter.post('/addCategory',adminController.addCategory)
 adminRouter.get('/getCategory',adminController.loadCategory)
 adminRouter.get('/getCourse',adminController.loadCourse)
+adminRouter.put('/manageCourse',adminController.manageCourse)
+
 
 
 

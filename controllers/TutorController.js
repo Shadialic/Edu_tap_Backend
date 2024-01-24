@@ -1,12 +1,11 @@
 const Tutor = require("../models/tutorModel");
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const OTP = require("../models/otpModel");
+const CategoryDb=require('../models/courseCategory')
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
-const multer=require('multer')
-const path=require('path')
-const {v4:uuidv4} =require('uuid')
+
+
 
 
 const securePassword = async (password) => {
@@ -220,6 +219,15 @@ const gooleRegister=async(req,res)=>{
     console.log(error);
   }
 }
+const getCategory=async(req,res)=>{
+  try{
+    const data=await CategoryDb.find()
+    res.status(200).json({newData:data})
+
+  }catch(err){
+    console.log(err);
+  }
+}
 
 module.exports = {
   securePassword,
@@ -228,6 +236,7 @@ module.exports = {
   verifyOTP,
   verifyLogin,
   gooleRegister,
+  getCategory
 
 
 };

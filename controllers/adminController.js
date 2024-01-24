@@ -193,8 +193,21 @@ const loadCategory=async(req,res)=>{
 const loadCourse=async(req,res)=>{
   try{
     const data=await CourseDb.find()
+    // const category = await Category
   console.log(data,'odi');
     res.json({data})
+  }catch(err){
+    console.log(err);
+  }
+}
+const manageCourse=async(req,res)=>{
+  try{
+    const id=req.body
+    console.log(id,'dssafsafgaf');
+    const newData=await CourseDb.updateOne({_id:id},{$set:{ is_varified: true } })
+   
+  console.log(data,'oxcvbdfsbdsfdi');
+    res.json({data:newData,alert:'course approved successfully compleated'})
   }catch(err){
     console.log(err);
   }
@@ -212,5 +225,6 @@ module.exports = {
   approveTutor,
   addCategory,
   loadCategory,
-  loadCourse
+  loadCourse,
+  manageCourse
 };

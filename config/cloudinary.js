@@ -75,6 +75,16 @@ const generateDeleteToken = (publicId) => {
     return { timestamp, signature };
 };
 
+const uploadToCloudinary = async (path , folder) => {
+    try {
+        console.log(path,folder);
+          const data = await cloudinary.v2.uploader.upload(path, { folder });
+          return { url: data.url, public_id: data.public_id };
+      } catch (error) {
+          console.log(error);
+      }
+  }
+
 
 function getPublicIdFromCloudinaryUrl(url) {
     const parts = url.split('/');
@@ -123,5 +133,6 @@ module.exports = {
     uploadImage,
     deleteImageFromCloudinary,
     generateDeleteToken,
-    getPublicIdFromCloudinaryUrl
+    getPublicIdFromCloudinaryUrl,
+    uploadToCloudinary
   };
