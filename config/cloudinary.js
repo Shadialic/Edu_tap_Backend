@@ -1,7 +1,6 @@
-const cloudinary = require('cloudinary');
+const cloudinary = require('cloudinary');;
 const multer = require('multer');
 const path = require('path');
-
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
     api_key: process.env.CLOUDINARY_KEY,
@@ -76,14 +75,16 @@ const generateDeleteToken = (publicId) => {
 };
 
 const uploadToCloudinary = async (path , folder) => {
-    try {
-        console.log(path,folder);
-          const data = await cloudinary.v2.uploader.upload(path, { folder });
+try {
+        console.log(folder,"========================================");
+        const data = await cloudinary.v2.uploader.upload(path, { folder });
+        console.log(data,"========================================");
           return { url: data.url, public_id: data.public_id };
       } catch (error) {
           console.log(error);
       }
   }
+
 
 
 function getPublicIdFromCloudinaryUrl(url) {
