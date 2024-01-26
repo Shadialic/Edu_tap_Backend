@@ -24,7 +24,7 @@ const adduser = async (req, res) => {
     if (exist) {
       res.json({ alert: "email already exists", status: false });
     } else {
-    console.log(exist, "hhhhh");
+      console.log(exist, "hhhhh");
 
       const users = new User({
         userName: name,
@@ -42,7 +42,7 @@ const adduser = async (req, res) => {
         saveUserData,
         alert: "please verify your email",
         status: true,
-        token
+        token,
       });
     }
   } catch (err) {
@@ -105,7 +105,6 @@ const userverifyOTP = async (req, res) => {
       console.log("User not found");
       // Handle the case where the user is not found
       return res.json({ status: false, alert: "wrong Otp" });
-
     }
   } catch (error) {
     console.error("Error while checking for user:", error);
@@ -131,16 +130,10 @@ const verifyLogin = async (req, res) => {
           console.log(exist.is_Active, "ppp");
 
           // Check if exist.is_Active is a boolean
-          if ( exist.is_Active =="true") {
+          if (exist.is_Active == "true") {
             if (exist.is_Active) {
               console.log("ooooo");
-              // const token = jwt.sign(
-              //   { userId: exist._id },
-              //   process.env.JWT_SECRET_KEY,
-              //   {
-              //     expiresIn: "1h",
-              //   }
-              // );
+
               const token = createSecretToken(exist._id);
               res.cookie("token", token, {
                 withCredentials: true,
@@ -174,8 +167,6 @@ const verifyLogin = async (req, res) => {
     res.status(500).json({ alert: "Internal Server Error" });
   }
 };
-
-
 
 const forgotPass = async (req, res) => {
   try {
@@ -272,45 +263,33 @@ const googleRegister = async (req, res) => {
   try {
     const { id, name, email, phone } = req.body;
     console.log(req.body);
+    // Assuming securePassword returns a Promise
+    const hashPassword = await securePassword(id);
+    const googleUser = new User({
+      userName: name,
+      email,
+      phone: phone || "000000000000",
+      password: hashPassword,
+      is_google: true,
+      is_Active: true,
+    });
+    const userData = await googleUser.save();
 
-    const exist = await User.findOne({ email: email });
+    console.log(userData, "User registered");
 
-    if (exist) {
-      return res.json({
-        alert: "Email already exists.",
+    if (userData) {
+      const token = createSecretToken(userData._id);
+      res.cookie("token", token, {
+        withCredentials: true,
+        httpOnly: false,
       });
-    } else {
-      // Assuming securePassword returns a Promise
-      const hashPassword = await securePassword(id);
 
-      const googleUser = new User({
-        userName: name,
-        email,
-        phone: phone || "000000000000",
-        password: hashPassword,
-        is_google: true,
-        is_Active: true,
-      });
-
-      const userData = await googleUser.save();
-
-      // Log the message only when the user registration is successful
-      console.log(userData, "User registered");
-
-      if (userData) {
-        const token = createSecretToken(userData._id);
-        res.cookie("token", token, {
-          withCredentials: true,
-          httpOnly: false,
+      if (token) {
+        return res.status(200).json({
+          created: true,
+          alert: "Google registration successful",
+          token,
         });
-
-        if (token) {
-          return res.status(200).json({
-            created: true,
-            alert: "Google registration successful",
-            token,
-          });
-        }
       }
     }
   } catch (err) {
@@ -319,7 +298,6 @@ const googleRegister = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 module.exports = {
   adduser,
@@ -330,5 +308,5 @@ module.exports = {
   forgotPass,
   passverifyOTP,
   updatePass,
-  googleRegister
+  googleRegister,
 };

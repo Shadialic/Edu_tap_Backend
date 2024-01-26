@@ -1,7 +1,7 @@
 const UserDb = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
-const  Category= require("../models/courseCategory")
-const CourseDb=require("../models/courseModel")
+const Category = require("../models/courseCategory");
+const CourseDb = require("../models/courseModel");
 const bycrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -158,18 +158,18 @@ const approveTutor = async (req, res) => {
     console.log(err);
   }
 };
-const addCategory = async (req,res) => {
+const addCategory = async (req, res) => {
   try {
     const { categoryname } = req.body;
-    console.log(categoryname, '=========');
+    console.log(categoryname, "=========");
 
     const newCategory = new Category({
-      categoryName:categoryname,
+      categoryName: categoryname,
     });
     const savedCategory = await newCategory.save();
     res.json({
       status: true,
-      category: savedCategory, 
+      category: savedCategory,
       alert: "Category added successfully",
     });
   } catch (err) {
@@ -181,44 +181,71 @@ const addCategory = async (req,res) => {
   }
 };
 
-const loadCategory=async(req,res)=>{
-  try{
-    const data=await Category.find()
-  console.log(data,'odi');
-    res.json({data})
-  }catch(err){
+const loadCategory = async (req, res) => {
+  try {
+    const data = await Category.find();
+    console.log(data, "odi");
+    res.json({ data });
+  } catch (err) {
     console.log(err);
   }
-}
-const loadCourse=async(req,res)=>{
-  try{
-    const data=await CourseDb.find()
-    res.json({data})
-  }catch(err){
+};
+const loadCourse = async (req, res) => {
+  try {
+    const data = await CourseDb.find();
+    res.json({ data });
+  } catch (err) {
     console.log(err);
   }
-}
-const manageCourse=async(req,res)=>{
-  try{
-    const id=req.body
-    const newData=await CourseDb.updateOne({_id:id},{$set:{ is_varified: true } })
-    res.json({data:newData,alert:'course approved successfully compleated'})
-  }catch(err){
+};
+const manageCourse = async (req, res) => {
+  try {
+    const id = req.body;
+    const newData = await CourseDb.updateOne(
+      { _id: id },
+      { $set: { is_varified: true } }
+    );
+    res.json({
+      data: newData,
+      alert: "course approved successfully compleated",
+    });
+  } catch (err) {
     console.log(err);
   }
-}
+};
 
-const getCourse=async(req,res)=>{
-  try{
-    const newData=await CourseDb.find()
-    res.json({data:newData,alert:'successfully compleated'})
-  }catch(err){
+const getCourse = async (req, res) => {
+  try {
+    const newData = await CourseDb.find();
+    res.json({ data: newData, alert: "successfully compleated" });
+  } catch (err) {
     console.log(err);
   }
-}
+};
 
-
-
+const blockCourse = async (req, res) => {
+  try {
+    const id = req.body;
+    const course = await CourseDb.findOne({ _id: id });
+    console.log(course, "sadsdvasad", req.body);
+    if (course.is_Block == "false") {
+      const newData = await CourseDb.updateOne(
+        { _id: id },
+        { $set: { is_Block: true } }
+      );
+      res.json({ newData, alert: "course is UnBlocked" });
+    } else {
+      const newData = await CourseDb.updateOne(
+        { _id: id },
+        { $set: { is_Block: false } }
+      );
+      res.json({ newData, alert: "course is Blocked" });
+    }
+  } catch (err) {
+    res.status(400).json({ alert: "intrnal server error" });
+    console.log(err);
+  }
+};
 
 module.exports = {
   loadloagin,
@@ -231,5 +258,6 @@ module.exports = {
   loadCategory,
   loadCourse,
   manageCourse,
-  getCourse
+  getCourse,
+  blockCourse,
 };

@@ -24,6 +24,10 @@ const CourseSchema=new mongoose.Schema({
     is_varified:{
         type:String,
         default:false
+    },
+    is_Block:{
+        type:String,
+        default:false
     }
 })
 const Course=mongoose.model('Course',CourseSchema);
