@@ -5,6 +5,7 @@ const CategoryDb=require('../models/courseCategory')
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
 
+const { uploadToCloudinary } = require('../utils/cloudinary')
 
 
 
@@ -20,12 +21,14 @@ const securePassword = async (password) => {
 const addTutor = async (req, res) => {
   try {
     const { tutorName, email, password, phone, role } = req.body;
-   const image= req.file.path
-    console.log('Image uploaded:', image);
+    const img = req.file.path;
+    const data = await uploadToCloudinary(img, "course");
+
+
     console.log(req.body, "lll");
     
     // Check if all details are provided
-    if (!tutorName || !email || !password || !phone||!image) {
+    if (!tutorName || !email || !password || !phone) {
       return res.status(403).json({
         status: false,
         alert: "All fields are required",
@@ -63,7 +66,7 @@ const addTutor = async (req, res) => {
       phone,
       password: hashedPassword,
       role,
-      image
+      image:data.url
     });
 
     return res.status(201).json({

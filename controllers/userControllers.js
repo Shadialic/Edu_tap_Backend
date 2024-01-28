@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const OTP = require("../models/otpModel");
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
+const { uploadToCloudinary } = require("../utils/cloudinary");
 
 const securePassword = async (password) => {
   try {
@@ -298,6 +299,47 @@ const googleRegister = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+const getUser=async(req,res)=>{
+  try{
+   
+    const userData=await User.find();
+    res.json({userData,alert:'sucsessfully get the data'})
+
+  }catch(err){
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+const UpdateProfile=async(req,res)=>{
+  try{
+    console.log(req.body,'[[][][');
+    const {email}=req.body;
+    const img = req.file.path;
+    const data = await uploadToCloudinary(img, "profile");
+    console.log(img,'sassa');
+    console.log(data,'sadatassa');
+    const userData = await User.findOneAndUpdate(
+      { email: email },
+      { $set: { image: data.url } },
+      { new: true }
+    );
+    console.log(userData,'userData');
+    res.json({userData,alert:'sucsessfully get the data'})
+
+  }catch(err){
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+const manageProfile=async(req,res)=>{
+  try{
+    const {email}=req.query;
+    console.log(req.body,'ddddddddddd',email);
+    const userData=await User.find({email:email});
+    res.json({userData,alert:'sucsessfully get the data'})
+  }catch(err){
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 
 module.exports = {
   adduser,
@@ -309,4 +351,7 @@ module.exports = {
   passverifyOTP,
   updatePass,
   googleRegister,
+  getUser,
+  UpdateProfile,
+  manageProfile
 };

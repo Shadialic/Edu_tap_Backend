@@ -233,13 +233,13 @@ const blockCourse = async (req, res) => {
         { _id: id },
         { $set: { is_Block: true } }
       );
-      res.json({ newData, alert: "course is UnBlocked" });
+      res.json({ newData, alert: "course is Blocked" });
     } else {
       const newData = await CourseDb.updateOne(
         { _id: id },
         { $set: { is_Block: false } }
       );
-      res.json({ newData, alert: "course is Blocked" });
+      res.json({ newData, alert: "course is UnBlocked" });
     }
   } catch (err) {
     res.status(400).json({ alert: "intrnal server error" });

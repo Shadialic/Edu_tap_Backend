@@ -1,5 +1,5 @@
 const Course = require("../models/courseModel");
-const { uploadToCloudinary } = require("../config/cloudinary");
+const { uploadToCloudinary } = require("../utils/cloudinary");
 const addCourse = async (req, res) => {
   try {
     const { title, description, level, payment, category, price } = req.body;
@@ -25,6 +25,7 @@ const addCourse = async (req, res) => {
       });
     }
   } catch (err) {
+    console.log('sddafdaf');
     console.error("Error in addCourse:", err);
     res.status(400).json({ status: false, alert: "Server error" });
   }
