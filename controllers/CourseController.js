@@ -1,12 +1,16 @@
 const Course = require("../models/courseModel");
+const CategoryDb=require('../models/courseCategory')
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const addCourse = async (req, res) => {
   try {
-    const { title, description, level, payment, category, price } = req.body;
+    const { title, description, level, payment, category, price,image } = req.body;
     console.log(req.body, "sssa");
-    const img = req.file.path;
-    const data = await uploadToCloudinary(img, "course");
-    console.log(data, "ooooooooooooooo");
+    console.log(image, "image");
+
+    
+    // const img = req.file.path;
+    // const data = await uploadToCloudinary(img, "course");
+    // console.log(data, "ooooooooooooooo");
     const newData = new Course({
       title: title,
       description: description,
@@ -14,7 +18,7 @@ const addCourse = async (req, res) => {
       payment: payment,
       category: category,
       price: price,
-      image: data.url,
+      image: image,
     });
     const savedData = await newData.save();
     if (newData) {
@@ -31,6 +35,21 @@ const addCourse = async (req, res) => {
   }
 };
 
+const getCourse = async (req, res) => {
+  try {
+    const CourseData = await Course.find();
+    const category = await CategoryDb.find();
+    console.log(category, 'category');
+    console.log(CourseData, 'CourseData');
+    res.json({ CourseData, category, status: true })
+  } catch (err) {
+    console.log(err); 
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+
 module.exports = {
   addCourse,
+  getCourse
 };

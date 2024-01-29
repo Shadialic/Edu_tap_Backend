@@ -3,6 +3,7 @@ const userRouter = express()
 const userController=require('../controllers/userControllers')
 const Auth=require('../middleware/AuthMiddleware');
 const upload = require('../middleware/multer');
+const CourseController=require('../controllers/CourseController')
 
 userRouter.post('/signup',userController.adduser);
 userRouter.post('/sendotp',userController.sendOTP);
@@ -15,6 +16,8 @@ userRouter.post('/userRegisterWithGoole',userController.googleRegister)
 userRouter.get('/getUser',userController.getUser)
 userRouter.post('/updateProfile', upload.single("image"), userController.UpdateProfile);
 userRouter.get('/manageProfile',userController.manageProfile)
+userRouter.get('/getCourse',CourseController.getCourse)
+
 
 
 

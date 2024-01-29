@@ -189,11 +189,7 @@ const gooleRegister=async(req,res)=>{
     const {id,name,email,phone}=req.body;
     console.log(req.body,'pppppdpdpdpdpdpdpdp');
     const exist=await Tutor.findOne({email:email})
-    if (exist) {
-      return res.json({
-        alert: "Email already exists.",
-      });
-    }
+ 
     const passwordHash=await securePassword(id);
     const GoogleTutor=new Tutor({
       tutorName:name,
@@ -231,7 +227,37 @@ const getCategory=async(req,res)=>{
     console.log(err);
   }
 }
+const manageProfile=async(req,res)=>{
+  try{
+    const {email}=req.query;
+    console.log(req.body,'ddddddddddd',email);
+    const tutorData=await Tutor.find({email:email});
+    console.log(tutorData,'tutorData');
+    res.json({tutorData,alert:'sucsessfully get the data'})
+  }catch(err){
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+const UpdateProfile=async(req,res)=>{
+  try{
+    console.log(req.body,'[[][][');
+    const {email}=req.body;
+    const img = req.file.path;
+    const data = await uploadToCloudinary(img, "profile");
+    console.log(img,'sassa');
+    console.log(data,'sadatassa');
+    const tutorData = await Tutor.findOneAndUpdate(
+      { email: email },
+      { $set: { image: data.url } },
+      { new: true }
+    );
+    console.log(tutorData,'userData');
+    res.json({tutorData,alert:'sucsessfully get the data'})
 
+  }catch(err){
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
 module.exports = {
   securePassword,
   addTutor,
@@ -239,7 +265,9 @@ module.exports = {
   verifyOTP,
   verifyLogin,
   gooleRegister,
-  getCategory
+  getCategory,
+  manageProfile,
+  UpdateProfile
 
 
 };
