@@ -160,18 +160,31 @@ const approveTutor = async (req, res) => {
 };
 const addCategory = async (req, res) => {
   try {
+    console.log('erwr');
     const { categoryname } = req.body;
-    console.log(categoryname, "=========");
+    console.log(categoryname, 'erwr');
 
-    const newCategory = new Category({
-      categoryName: categoryname,
+    // Use findOne instead of find to check if a single category exists
+    const exist = await Category.findOne({
+      categoryName: { $regex: new RegExp(categoryname, "i") },
     });
-    const savedCategory = await newCategory.save();
-    res.json({
-      status: true,
-      category: savedCategory,
-      alert: "Category added successfully",
-    });
+    
+    console.log(exist, 'exist');
+
+    if (exist) {
+      return res.json({ alert: "Category already exists" });
+    } else {
+      console.log('dsaaa');
+      const newCategory = new Category({
+        categoryName: categoryname,
+      });
+      const savedCategory = await newCategory.save();
+      res.json({
+        status: true,
+        category: savedCategory,
+        alert: "Category added successfully",
+      });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -180,6 +193,7 @@ const addCategory = async (req, res) => {
     });
   }
 };
+
 
 const loadCategory = async (req, res) => {
   try {
@@ -190,6 +204,29 @@ const loadCategory = async (req, res) => {
     console.log(err);
   }
 };
+const managecategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    objectId = new mongoose.Types.ObjectId(id);
+    console.log(id, 'id');
+    const data = await Category.updateOne(
+      { _id: objectId },
+      { $set: { is_Block: true } }
+    );
+
+    console.log(data, "odi")
+    if (data.nModified > 0) {
+      res.json({ data, alert: 'Category Blocked' });
+    } else {
+      res.json({ alert: 'Category not found or already blocked' });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
 const loadCourse = async (req, res) => {
   try {
     const data = await CourseDb.find();
@@ -260,4 +297,5 @@ module.exports = {
   manageCourse,
   getCourse,
   blockCourse,
+  managecategory
 };

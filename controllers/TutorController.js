@@ -1,13 +1,11 @@
 const Tutor = require("../models/tutorModel");
 const bcrypt = require("bcrypt");
 const OTP = require("../models/otpModel");
-const CategoryDb=require('../models/courseCategory')
+const CategoryDb = require("../models/courseCategory");
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
 
-const { uploadToCloudinary } = require('../utils/cloudinary')
-
-
+const { uploadToCloudinary } = require("../utils/cloudinary");
 
 const securePassword = async (password) => {
   try {
@@ -24,9 +22,8 @@ const addTutor = async (req, res) => {
     const img = req.file.path;
     const data = await uploadToCloudinary(img, "course");
 
-
     console.log(req.body, "lll");
-    
+
     // Check if all details are provided
     if (!tutorName || !email || !password || !phone) {
       return res.status(403).json({
@@ -38,7 +35,7 @@ const addTutor = async (req, res) => {
     // Check if user already exists
     const existingUser = await Tutor.findOne({ email: email });
     console.log(existingUser, "existingUser");
-    
+
     if (existingUser) {
       return res.json({
         alert: "email already exists",
@@ -46,10 +43,10 @@ const addTutor = async (req, res) => {
         status: false,
       });
     }
-    
+
     // Secure password
     let hashedPassword;
-    
+
     try {
       hashedPassword = await bcrypt.hash(password, 10);
     } catch (error) {
@@ -59,14 +56,14 @@ const addTutor = async (req, res) => {
         status: false,
       });
     }
-    
+
     const newTutor = await Tutor.create({
       tutorName,
       email,
       phone,
       password: hashedPassword,
       role,
-      image:data.url
+      image: data.url,
     });
 
     return res.status(201).json({
@@ -80,7 +77,6 @@ const addTutor = async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 };
-
 
 const sendOTP = async (req, res) => {
   try {
@@ -127,7 +123,8 @@ const verifyOTP = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        alert: "Tutor signup successful. Please wait for admin approval before logging in. ",
+        alert:
+          "Tutor signup successful. Please wait for admin approval before logging in. ",
         tutor,
         status: true,
       });
@@ -149,16 +146,10 @@ const verifyLogin = async (req, res) => {
 
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
-      if (exist.is_Actived=="true") {
+      if (exist.is_Actived == "true") {
         if (compared) {
-          console.log('ss');
-          // let token = jwt.sign(
-          //   { userId: exist._id },
-          //   process.env.JWT_SECRET_KEY,
-          //   {
-          //     expiresIn: "1h",
-          //   }
-          // );
+          console.log("ss");
+
           const token = createSecretToken(exist._id);
           res.cookie("token", token, {
             withCredentials: true,
@@ -169,95 +160,102 @@ const verifyLogin = async (req, res) => {
             status: true,
             err: null,
             token,
-            alert:'Tutor SignIn successfully Compleated'
+            alert: "Tutor SignIn successfully Compleated",
           });
         } else {
           res.json({ alert: "Enter password is incorrect !" });
         }
-      }else{
-        res.json({alert:'Please wait for admin approval before logging in'});
+      } else {
+        res.json({ alert: "Please wait for admin approval before logging in" });
       }
     } else {
-      res.json({ alert: "Email not Exist !" });
+      return res.json({ alert: "Email not Exist !" });
     }
   } catch (err) {
     console.log(err);
   }
 };
-const gooleRegister=async(req,res)=>{
-  try{
-    const {id,name,email,phone}=req.body;
-    console.log(req.body,'pppppdpdpdpdpdpdpdp');
-    const exist=await Tutor.findOne({email:email})
- 
-    const passwordHash=await securePassword(id);
-    const GoogleTutor=new Tutor({
-      tutorName:name,
-      email,
-      password:passwordHash,
-      phone:phone ||'0000000000',
-     
-    })
-    const tutorData=await GoogleTutor.save();
-    if (tutorData) {
-      const token = createSecretToken(tutorData._id);
-      res.cookie("token", token, {
-        withCredentials: true,
-        httpOnly: false,
-      });
-
-      if (token) {
+const gooleRegister = async (req, res) => {
+  try {
+    const { id, name, email, phone } = req.body;
+    console.log(req.body, "pppppdpdpdpdpdpdpdp");
+    const exist = await Tutor.findOne({ email: email });
+    if (exist.is_Actived == "true") {
+      if (exist) {
         return res.status(200).json({
           created: true,
           alert: "Google registration successful",
-          token,
         });
+      } else {
+        const passwordHash = await securePassword(id);
+        const GoogleTutor = new Tutor({
+          tutorName: name,
+          email,
+          password: passwordHash,
+          phone: phone || "0000000000",
+        });
+        const tutorData = await GoogleTutor.save();
+        if (tutorData) {
+          const token = createSecretToken(tutorData._id);
+          res.cookie("token", token, {
+            withCredentials: true,
+            httpOnly: false,
+          });
+
+          if (token) {
+            return res.status(200).json({
+              created: true,
+              alert: "Google registration successful",
+              token,
+            });
+          }
+        }
       }
+    } else {
+      res.json({ alert: "Please wait for admin approval before logging in" });
     }
-  }catch(error){
+  } catch (error) {
     console.log(error);
   }
-}
-const getCategory=async(req,res)=>{
-  try{
-    const data=await CategoryDb.find()
-    res.status(200).json({newData:data})
-
-  }catch(err){
+};
+const getCategory = async (req, res) => {
+  try {
+    const data = await CategoryDb.find();
+    res.status(200).json({ newData: data });
+  } catch (err) {
     console.log(err);
   }
-}
-const manageProfile=async(req,res)=>{
-  try{
-    const {email}=req.query;
-    console.log(req.body,'ddddddddddd',email);
-    const tutorData=await Tutor.find({email:email});
-    console.log(tutorData,'tutorData');
-    res.json({tutorData,alert:'sucsessfully get the data'})
-  }catch(err){
+};
+const manageProfile = async (req, res) => {
+  try {
+    const { email } = req.query;
+    console.log(req.body, "ddddddddddd", email);
+    const tutorData = await Tutor.find({ email: email });
+    console.log(tutorData, "tutorData");
+    res.json({ tutorData, alert: "sucsessfully get the data" });
+  } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
   }
-}
-const UpdateProfile=async(req,res)=>{
-  try{
-    console.log(req.body,'[[][][');
-    const {email}=req.body;
+};
+const UpdateProfile = async (req, res) => {
+  try {
+    console.log(req.body, "[[][][");
+    const { email } = req.body;
     const img = req.file.path;
     const data = await uploadToCloudinary(img, "profile");
-    console.log(img,'sassa');
-    console.log(data,'sadatassa');
+    console.log(img, "sassa");
+    console.log(data, "sadatassa");
     const tutorData = await Tutor.findOneAndUpdate(
       { email: email },
       { $set: { image: data.url } },
       { new: true }
     );
-    console.log(tutorData,'userData');
-    res.json({tutorData,alert:'sucsessfully get the data'})
-
-  }catch(err){
+    console.log(tutorData, "userData");
+    res.json({ tutorData, alert: "sucsessfully get the data" });
+  } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
   }
-}
+};
 module.exports = {
   securePassword,
   addTutor,
@@ -267,7 +265,5 @@ module.exports = {
   gooleRegister,
   getCategory,
   manageProfile,
-  UpdateProfile
-
-
+  UpdateProfile,
 };
