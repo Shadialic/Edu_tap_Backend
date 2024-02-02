@@ -26,8 +26,11 @@ const TutorSchema = mongoose.Schema({
       },
       is_Actived:{
         type: String,
-        default: false,
-
+        default:'pending'
+      },
+      is_Block:{
+        type:String,
+        default:false
       }
     
 });

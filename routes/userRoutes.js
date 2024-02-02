@@ -16,7 +16,7 @@ userRouter.post('/userRegisterWithGoole',userController.googleRegister)
 userRouter.get('/getUser',userController.getUser)
 userRouter.post('/updateProfile', upload.single("image"), userController.UpdateProfile);
 userRouter.get('/manageProfile',userController.manageProfile)
-userRouter.get('/getCourse',CourseController.getCourse)
+userRouter.get('/getCourse',Auth,CourseController.getCourse)
 
 
 

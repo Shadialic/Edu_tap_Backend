@@ -4,7 +4,6 @@ const OTP = require("../models/otpModel");
 const CategoryDb = require("../models/courseCategory");
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
-
 const { uploadToCloudinary } = require("../utils/cloudinary");
 
 const securePassword = async (password) => {
@@ -43,10 +42,7 @@ const addTutor = async (req, res) => {
         status: false,
       });
     }
-
-    // Secure password
     let hashedPassword;
-
     try {
       hashedPassword = await bcrypt.hash(password, 10);
     } catch (error) {
@@ -114,13 +110,8 @@ const verifyOTP = async (req, res) => {
     // Check if user is already present
     const checkUserPresent = await OTP.findOne({ otp: otp });
     console.log(checkUserPresent, "checkUserPresent");
-
     if (checkUserPresent) {
       const tutor = await Tutor.findOne({ email: checkUserPresent.email });
-      console.log(tutor, "tutor");
-      // tutor.is_Actived = true;
-      // tutor.save();
-
       return res.status(200).json({
         success: true,
         alert:
@@ -143,29 +134,34 @@ const verifyLogin = async (req, res) => {
     console.log(req.body, "llllll");
     const exist = await Tutor.findOne({ email: email });
     console.log(exist, "--1-1-1-1-");
-
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
-      if (exist.is_Actived == "true") {
-        if (compared) {
-          console.log("ss");
+      if (exist.is_Actived == "approved") {
+        if (exist.is_Block == "false") {
+          if (compared) {
+            const token = createSecretToken(exist._id);
+            res.cookie("tutortoken", token, {
+              withCredentials: true,
+              httpOnly: false,
+            });
+            res.json({
+              tutorData: exist,
+              status: true,
+              err: null,
+              token,
+              alert: "Tutor SignIn successfully Compleated",
+            });
+          } else {
+            res.json({ alert: "Enter password is incorrect !" });
+          }
+        }else{
+        
+          res.json({ alert: "admin blocked you!" });
 
-          const token = createSecretToken(exist._id);
-          res.cookie("token", token, {
-            withCredentials: true,
-            httpOnly: false,
-          });
-          res.json({
-            tutorData: exist,
-            status: true,
-            err: null,
-            token,
-            alert: "Tutor SignIn successfully Compleated",
-          });
-        } else {
-          res.json({ alert: "Enter password is incorrect !" });
         }
-      } else {
+      } else if (exist.is_Actived === "rejected") {
+        res.json({ alert: "Admin rejected you" });
+      } else if (exist.is_Actived === "pending") {
         res.json({ alert: "Please wait for admin approval before logging in" });
       }
     } else {
