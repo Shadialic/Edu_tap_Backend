@@ -3,6 +3,9 @@ const CourseSchema=new mongoose.Schema({
     title:{
         type:String
     },
+    auther:{
+        type:String,
+    },
     payment:{
         type:String
     },
@@ -28,7 +31,8 @@ const CourseSchema=new mongoose.Schema({
     is_Block:{
         type:String,
         default:false
-    }
+    },
+    
 })
 const Course=mongoose.model('Course',CourseSchema);
 module.exports=Course;

@@ -3,7 +3,7 @@ const CategoryDb=require('../models/courseCategory')
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const addCourse = async (req, res) => {
   try {
-    const { title, description, level, payment, category, price,image } = req.body;
+    const { title, description, level, payment, category, price,image,auther } = req.body;
     console.log(req.body, "sssa");
     console.log(image, "image");
 
@@ -19,6 +19,7 @@ const addCourse = async (req, res) => {
       category: category,
       price: price,
       image: image,
+      auther:auther,
     });
     const savedData = await newData.save();
     if (newData) {

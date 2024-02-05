@@ -242,7 +242,7 @@ const managecategory = async (req, res) => {
       return res.json({
         exist,
         data,
-        alert: `${exist.categoryName} Category is Blocked`,
+        alert: `${exist.categoryName} Category is UnBlocked`,
       });
     } else if (exist) {
       const data = await Category.updateOne(
@@ -252,7 +252,7 @@ const managecategory = async (req, res) => {
       return res.json({
         exist,
         data,
-        alert: `${exist.categoryName} Category is UnBlocked`,
+        alert: `${exist.categoryName} Category is Blocked`,
       });
     } else {
       return res.json({ alert: "Category not found" });

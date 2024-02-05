@@ -14,6 +14,9 @@ vendorRouter.post("/vendor/loadCourse",CourseController.addCourse)
 vendorRouter.get('/vendor/getCategory',vendorController.getCategory)
 vendorRouter.get('/vendor/manageProfile',vendorController.manageProfile)
 vendorRouter.post('/vendor/updateProfile', upload.single("image"), vendorController.UpdateProfile);
+vendorRouter.post('/vendor/getcoures',vendorController.getCourse)
+vendorRouter.put('/vendor/manageCourse/:id',vendorController.managecourse)
+
 
 
 

@@ -129,12 +129,8 @@ const verifyLogin = async (req, res) => {
         if (compared) {
           console.log(typeof exist.is_Active, "ppp");
           console.log(exist.is_Active, "ppp");
-
-          // Check if exist.is_Active is a boolean
           if (exist.is_Active == "true") {
             if (exist.is_Active) {
-              console.log("ooooo");
-
               const token = createSecretToken(exist._id);
               res.cookie("token", token, {
                 withCredentials: true,
@@ -151,8 +147,7 @@ const verifyLogin = async (req, res) => {
               res.json({ alert: "User account is not active." });
             }
           } else {
-            // Handle the case where exist.is_Active is not a boolean
-            res.json({ alert: "Invalid is_Active value." });
+            res.json({ alert: "Admin Blocked You." });
           }
         } else {
           res.json({ alert: "Entered password is incorrect!" });
@@ -172,7 +167,6 @@ const verifyLogin = async (req, res) => {
 const forgotPass = async (req, res) => {
   try {
     let { email } = req.body;
-
     console.log(email, "userMail");
     const userExists = await User.findOne({ email });
     console.log(userExists, "userMail");
@@ -185,7 +179,6 @@ const forgotPass = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-
     let result = await OTP.findOne({ otp: otp });
     while (result) {
       otp = otpGenerator.generate(6, {
@@ -204,15 +197,11 @@ const forgotPass = async (req, res) => {
     console.log(err);
   }
 };
-const passverifyOTP = async (req, res) => {
-  console.log(req.body.otp, "=======>>>checkkkkkkk================>>>>>");
 
+const passverifyOTP = async (req, res) => {
   try {
     const otp = req.body.otp.toString();
-
-    // Check if user is already present
     const checkUserPresent = await OTP.findOne({ otp: otp });
-
     if (checkUserPresent) {
       const newuser = await User.findOne({ email: checkUserPresent.email });
       newuser.is_Active = true;
@@ -224,15 +213,11 @@ const passverifyOTP = async (req, res) => {
         newuser,
         status: true,
       });
-      // Handle the case where the user is found
     } else {
-      console.log("User not found");
-      // Handle the case where the user is not found
       return res.status(400).json({ success: false, alert: "wrong Otp" });
     }
   } catch (error) {
     console.error("Error while checking for user:", error);
-    // Handle the error appropriately
   }
 };
 
@@ -242,14 +227,11 @@ const updatePass = async (req, res) => {
     const password = req.body.password;
     console.log(email, "888888");
     console.log(password, "11111111");
-
     const hashPass = await securePassword(password);
     const newData = await User.updateOne(
       { email: email },
       { $set: { password: hashPass } }
     );
-    console.log(newData, "newData");
-
     res.status(200).json({
       status: 200,
       newData,
@@ -260,11 +242,12 @@ const updatePass = async (req, res) => {
   }
 };
 
-const googleRegister = async (req, res) => {
+  const googleRegister = async (req, res) => {
   try {
     const { id, name, email, phone } = req.body;
+    const data = await User.findOne({ email: email });
     console.log(req.body);
-    // Assuming securePassword returns a Promise
+    if(!data){
     const hashPassword = await securePassword(id);
     const googleUser = new User({
       userName: name,
@@ -275,16 +258,26 @@ const googleRegister = async (req, res) => {
       is_Active: true,
     });
     const userData = await googleUser.save();
-
-    console.log(userData, "User registered");
-
     if (userData) {
       const token = createSecretToken(userData._id);
       res.cookie("token", token, {
         withCredentials: true,
         httpOnly: false,
       });
-
+      if (token) {
+        return res.status(200).json({
+          created: true,
+          alert: "Google registration successful",
+          token,
+        });
+      }
+    }
+    }else{
+      const token = createSecretToken(data._id);
+      res.cookie("token", token, {
+        withCredentials: true,
+        httpOnly: false,
+      });
       if (token) {
         return res.status(200).json({
           created: true,
@@ -294,52 +287,76 @@ const googleRegister = async (req, res) => {
       }
     }
   } catch (err) {
-    console.error(err);
-    // Handle errors and return an appropriate response to the client
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-const getUser=async(req,res)=>{
-  try{
-   
-    const userData=await User.find();
-    res.json({userData,alert:'sucsessfully get the data'})
 
-  }catch(err){
+const getUser = async (req, res) => {
+  try {
+    const userData = await User.find();
+    res.json({ userData, alert: "sucsessfully get the data" });
+  } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
   }
-}
-const UpdateProfile=async(req,res)=>{
-  try{
-    console.log(req.body,'[[][][');
-    const {email}=req.body;
+};
+
+const UpdateProfile = async (req, res) => {
+  try {
+    const { email } = req.body;
     const img = req.file.path;
     const data = await uploadToCloudinary(img, "profile");
-    console.log(img,'sassa');
-    console.log(data,'sadatassa');
     const userData = await User.findOneAndUpdate(
       { email: email },
       { $set: { image: data.url } },
       { new: true }
     );
-    console.log(userData,'userData');
-    res.json({userData,alert:'sucsessfully get the data'})
-
-  }catch(err){
+    console.log(userData, "userData");
+    res.json({ userData, alert: "sucsessfully get the data" });
+  } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
   }
-}
-const manageProfile=async(req,res)=>{
-  try{
-    const {email}=req.query;
-    console.log(req.body,'ddddddddddd',email);
-    const userData=await User.find({email:email});
-    res.json({userData,alert:'sucsessfully get the data'})
-  }catch(err){
+};
+
+const manageProfile = async (req, res) => {
+  try {
+    const { email } = req.query;
+    const userData = await User.find({ email: email });
+    res.json({ userData, alert: "sucsessfully get the data" });
+  } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
   }
-}
+};
 
+const profileUpdate = async (req, res) => {
+  try {
+    const { userName, phone, Country, email,Qualification,year,Institute } = req.body;
+    console.log(req.body,'llll');
+    if (!email) {
+      return res.status(400).json({ alert: "Email is required" });
+    }
+    const updatedData = await User.findOneAndUpdate(
+      { email: email },
+      {
+        $set: {
+          userName: userName,
+          phone: phone,
+          Country: Country,
+          Qualification:Qualification,
+          year:year,
+          Institute:Institute,
+        },
+      },
+      { new: true }
+    );
+    if (!updatedData) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ updatedData, alert: "Your profile is updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
   adduser,
@@ -353,5 +370,6 @@ module.exports = {
   googleRegister,
   getUser,
   UpdateProfile,
-  manageProfile
+  manageProfile,
+  profileUpdate,
 };

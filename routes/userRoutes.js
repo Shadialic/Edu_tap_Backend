@@ -17,6 +17,8 @@ userRouter.get('/getUser',userController.getUser)
 userRouter.post('/updateProfile', upload.single("image"), userController.UpdateProfile);
 userRouter.get('/manageProfile',userController.manageProfile)
 userRouter.get('/getCourse',Auth,CourseController.getCourse)
+userRouter.post('/updateuser',userController.profileUpdate)
+
 
 
 

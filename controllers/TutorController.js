@@ -1,6 +1,7 @@
 const Tutor = require("../models/tutorModel");
 const bcrypt = require("bcrypt");
 const OTP = require("../models/otpModel");
+const CourseDb=require('../models/courseModel')
 const CategoryDb = require("../models/courseCategory");
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
@@ -137,7 +138,7 @@ const verifyLogin = async (req, res) => {
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
       if (exist.is_Actived == "approved") {
-        if (exist.is_Block == "false") {
+        if (exist.is_Block == "true") {
           if (compared) {
             const token = createSecretToken(exist._id);
             res.cookie("tutortoken", token, {
@@ -252,6 +253,42 @@ const UpdateProfile = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+const getCourse = async (req, res) => {
+  try {
+   
+    const { auter } = req.body;
+    const course = await CourseDb.findOne({ auther: auter });
+    if (course) {
+      console.log(course, 'ppppppp');
+      res.status(200).json({ success: true, course });
+    } else {
+      res.status(404).json({ success: false, message: 'Course not found' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+const managecourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+   
+
+    const result = await CourseDb.deleteOne({ _id: id });
+    if (result.deletedCount === 1) {
+      console.log(`Document with ID ${id} deleted successfully.`);
+      return res.json({ result, alert: 'Course canceled successfully.' });
+    } else {
+      console.log(`Document with ID ${id} not found.`);
+      return res.status(404).json({ alert: 'Course not found.' });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ alert: 'An error occurred while canceling the course.' });
+  }
+};
+
 module.exports = {
   securePassword,
   addTutor,
@@ -262,4 +299,6 @@ module.exports = {
   getCategory,
   manageProfile,
   UpdateProfile,
+  getCourse,
+  managecourse
 };
