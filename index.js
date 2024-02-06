@@ -1,22 +1,24 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-require('dotenv').config();
-const cookieParser = require('cookie-parser');
-const path = require('path');
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+require("dotenv").config();
+const cookieParser = require("cookie-parser");
+const path = require("path");
 
 const app = express();
-const { server, io } = require('./websocket/websocket')
+const { server, io } = require("./websocket/websocket");
 // Middleware
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true,
-  methods: '*',
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: "*",
+  })
+);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -24,18 +26,18 @@ mongoose.connect(process.env.MONGODB_URI, {
   useUnifiedTopology: true,
 });
 
-const userRoutes = require('./routes/userRoutes');
-const vendorRoutes = require('./routes/VendorRotes');
-const adminRoutes = require('./routes/adminRouts');
+const userRoutes = require("./routes/userRoutes");
+const vendorRoutes = require("./routes/vendorRotes");
+const adminRoutes = require("./routes/adminRouts");
 
-app.use('/', userRoutes);
-app.use('/vendor', vendorRoutes);
-app.use('/admin', adminRoutes);
+app.use("/", userRoutes);
+app.use("/vendor", vendorRoutes);
+app.use("/admin", adminRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something went wrong!');
+  res.status(500).send("Something went wrong!");
 });
 
 // Start the server
@@ -74,13 +76,12 @@ app.listen(port, () => {
 
 // // Routes
 // const userRoutes = require('./routes/userRoutes');
-// const vendorRoutes = require('./routes/VendorRotes'); 
-// const adminRoutes = require('./routes/adminRouts'); 
+// const vendorRoutes = require('./routes/VendorRotes');
+// const adminRoutes = require('./routes/adminRouts');
 
 // app.use('/', userRoutes);
 // app.use('/vendor', vendorRoutes);
 // app.use('/admin', adminRoutes);
-
 
 // app.use((err, req, res, next) => {
 //     console.error(err.stack);

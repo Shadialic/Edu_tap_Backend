@@ -1,8 +1,8 @@
 const Tutor = require("../models/tutorModel");
 const bcrypt = require("bcrypt");
 const OTP = require("../models/otpModel");
-const CourseDb=require('../models/courseModel')
-const CategoryDb = require("../models/courseCategory");
+const CourseDb = require("../models/courseModel");
+const CategoryDb = require("../models/categoryModel");
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
 const { uploadToCloudinary } = require("../utils/cloudinary");
@@ -43,9 +43,9 @@ const addTutor = async (req, res) => {
         status: false,
       });
     }
-    let hashedPassword;
+
     try {
-      hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
     } catch (error) {
       return res.status(500).json({
         success: false,
@@ -78,13 +78,13 @@ const addTutor = async (req, res) => {
 const sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
-    let otp = otpGenerator.generate(6, {
+    const otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
     });
 
-    let result = await OTP.findOne({ otp: otp });
+    const result = await OTP.findOne({ otp: otp });
     while (result) {
       otp = otpGenerator.generate(6, {
         upperCaseAlphabets: false,
@@ -104,7 +104,6 @@ const sendOTP = async (req, res) => {
   }
 };
 const verifyOTP = async (req, res) => {
-  console.log(req.body.otp, "=======>>>000000================>>>>>");
 
   const otp = req.body.otp.toString();
   try {
@@ -137,8 +136,8 @@ const verifyLogin = async (req, res) => {
     console.log(exist, "--1-1-1-1-");
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
-      if (exist.is_Actived == "approved") {
-        if (exist.is_Block == "true") {
+      if (exist.is_Actived === "approved") {
+        if (exist.is_Block === "true") {
           if (compared) {
             const token = createSecretToken(exist._id);
             res.cookie("tutortoken", token, {
@@ -155,10 +154,8 @@ const verifyLogin = async (req, res) => {
           } else {
             res.json({ alert: "Enter password is incorrect !" });
           }
-        }else{
-        
+        } else {
           res.json({ alert: "admin blocked you!" });
-
         }
       } else if (exist.is_Actived === "rejected") {
         res.json({ alert: "Admin rejected you" });
@@ -175,9 +172,8 @@ const verifyLogin = async (req, res) => {
 const gooleRegister = async (req, res) => {
   try {
     const { id, name, email, phone } = req.body;
-    console.log(req.body, "pppppdpdpdpdpdpdpdp");
     const exist = await Tutor.findOne({ email: email });
-    if (exist.is_Actived == "true") {
+    if (exist.is_Actived === "true") {
       if (exist) {
         return res.status(200).json({
           created: true,
@@ -256,36 +252,35 @@ const UpdateProfile = async (req, res) => {
 
 const getCourse = async (req, res) => {
   try {
-   
     const { auter } = req.body;
     const course = await CourseDb.findOne({ auther: auter });
     if (course) {
-      console.log(course, 'ppppppp');
+      console.log(course, "ppppppp");
       res.status(200).json({ success: true, course });
     } else {
-      res.status(404).json({ success: false, message: 'Course not found' });
+      res.status(404).json({ success: false, message: "Course not found" });
     }
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 const managecourse = async (req, res) => {
   try {
     const { id } = req.params;
 
-   
-
     const result = await CourseDb.deleteOne({ _id: id });
     if (result.deletedCount === 1) {
       console.log(`Document with ID ${id} deleted successfully.`);
-      return res.json({ result, alert: 'Course canceled successfully.' });
+      return res.json({ result, alert: "Course canceled successfully." });
     } else {
       console.log(`Document with ID ${id} not found.`);
-      return res.status(404).json({ alert: 'Course not found.' });
+      return res.status(404).json({ alert: "Course not found." });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ alert: 'An error occurred while canceling the course.' });
+    return res
+      .status(500)
+      .json({ alert: "An error occurred while canceling the course." });
   }
 };
 
@@ -300,5 +295,5 @@ module.exports = {
   manageProfile,
   UpdateProfile,
   getCourse,
-  managecourse
+  managecourse,
 };

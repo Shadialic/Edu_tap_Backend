@@ -1,6 +1,6 @@
 const UserDb = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
-const Category = require("../models/courseCategory");
+const Category = require("../models/categoryModel");
 const CourseDb = require("../models/courseModel");
 const bycrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -79,7 +79,7 @@ const blockuser = async (req, res) => {
     const { id } = req.params;
     console.log(id, "idxx");
     const objectId = new mongoose.Types.ObjectId(id);
-    let user = await UserDb.findOne({ _id: objectId });
+    const user = await UserDb.findOne({ _id: objectId });
     if (user.is_Active == "true") {
       const newData = await UserDb.updateOne(
         { _id: objectId },
@@ -107,10 +107,10 @@ const blockuser = async (req, res) => {
 };
 const blocktutor = async (req, res) => {
   try {
-    let id = req.body._id;
+    const id = req.body._id;
     const objectId = new mongoose.Types.ObjectId(id);
-    let tutor = await TutorDb.findOne({ _id: objectId });
-    if (tutor.is_Block == "false") {
+    const tutor = await TutorDb.findOne({ _id: objectId });
+    if (tutor.is_Block === "false") {
       const newData = await TutorDb.updateOne(
         { _id: objectId },
         { $set: { is_Block: true } }
@@ -162,7 +162,6 @@ const approveTutor = async (req, res) => {
       } else if (data === "rejected") {
         tutorData.is_Actived = "rejected";
         await tutorData.save();
-
         const mailSendResponse = await mailSender(
           tutorData.email,
           "Edu-tap - Tutor Request Update",
@@ -173,7 +172,6 @@ const approveTutor = async (req, res) => {
             <p>We value your contributions and hope that you consider applying again in the future. Thank you for your understanding.</p>
             <p>Best regards,<br/>Edu-tap Team</p>`
         );
-
         res.status(200).json({ tutorData, alert: "rejected tutor" });
       }
     } else {
@@ -308,7 +306,7 @@ const blockCourse = async (req, res) => {
   try {
     const id = req.body;
     const course = await CourseDb.findOne({ _id: id });
-    if (course.is_Block == "false") {
+    if (course.is_Block === "false") {
       const newData = await CourseDb.updateOne(
         { _id: id },
         { $set: { is_Block: true } }

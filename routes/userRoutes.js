@@ -1,9 +1,9 @@
 const express = require('express');
 const userRouter = express()
-const userController=require('../controllers/userControllers')
-const Auth=require('../middleware/AuthMiddleware');
+const userController=require('../controllers/userController')
+const Auth=require('../middleware/authMiddleware');
 const upload = require('../middleware/multer');
-const CourseController=require('../controllers/CourseController')
+const CourseController=require('../controllers/courseController')
 
 userRouter.post('/signup',userController.adduser);
 userRouter.post('/sendotp',userController.sendOTP);

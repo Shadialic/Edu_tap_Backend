@@ -82,14 +82,9 @@ const sendOTP = async (req, res) => {
 };
 
 const userverifyOTP = async (req, res) => {
-  console.log(req.body.otp, "=======>>>checkkkkkkk================>>>>>");
-
   try {
     const otp = req.body.otp.toString();
-
-    // Check if user is already present
     const checkUserPresent = await OTP.findOne({ otp: otp });
-
     if (checkUserPresent) {
       const user = await User.findOne({ email: checkUserPresent.email });
       user.is_Active = true;
@@ -116,20 +111,12 @@ const userverifyOTP = async (req, res) => {
 const verifyLogin = async (req, res) => {
   try {
     const { credential, password } = req.body;
-    console.log(req.body, "llllll");
     const exist = await User.findOne({ email: credential });
-    console.log(exist, "exist");
-
     if (exist) {
-      // Check if both `password` and `exist.password` are defined
       if (password && exist.password) {
         const compared = await bcrypt.compare(password, exist.password);
-        console.log(compared, "compared");
-
         if (compared) {
-          console.log(typeof exist.is_Active, "ppp");
-          console.log(exist.is_Active, "ppp");
-          if (exist.is_Active == "true") {
+          if (exist.is_Active === "true") {
             if (exist.is_Active) {
               const token = createSecretToken(exist._id);
               res.cookie("token", token, {
@@ -167,9 +154,7 @@ const verifyLogin = async (req, res) => {
 const forgotPass = async (req, res) => {
   try {
     let { email } = req.body;
-    console.log(email, "userMail");
     const userExists = await User.findOne({ email });
-    console.log(userExists, "userMail");
     if (!userExists) {
       res.status(400).json({ alert: "user not exist" });
       return;
@@ -225,8 +210,6 @@ const updatePass = async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
-    console.log(email, "888888");
-    console.log(password, "11111111");
     const hashPass = await securePassword(password);
     const newData = await User.updateOne(
       { email: email },
@@ -242,7 +225,7 @@ const updatePass = async (req, res) => {
   }
 };
 
-  const googleRegister = async (req, res) => {
+const googleRegister = async (req, res) => {
   try {
     const { id, name, email, phone } = req.body;
     const data = await User.findOne({ email: email });
@@ -330,7 +313,6 @@ const manageProfile = async (req, res) => {
 const profileUpdate = async (req, res) => {
   try {
     const { userName, phone, Country, email,Qualification,year,Institute } = req.body;
-    console.log(req.body,'llll');
     if (!email) {
       return res.status(400).json({ alert: "Email is required" });
     }

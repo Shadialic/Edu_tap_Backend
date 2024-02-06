@@ -1,7 +1,7 @@
 const express =require('express');
 const vendorRouter=express();
-const vendorController=require('../controllers/TutorController');
-const CourseController=require('../controllers/CourseController')
+const vendorController=require('../controllers/tutorController');
+const CourseController=require('../controllers/courseController')
 // const {uploadImage} = require('../config/cloudinary');
 const upload=require('../middleware/multer')
 

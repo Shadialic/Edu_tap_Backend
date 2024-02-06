@@ -1,16 +1,9 @@
 const Course = require("../models/courseModel");
-const CategoryDb=require('../models/courseCategory')
+const CategoryDb=require('../models/categoryModel')
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const addCourse = async (req, res) => {
   try {
     const { title, description, level, payment, category, price,image,auther } = req.body;
-    console.log(req.body, "sssa");
-    console.log(image, "image");
-
-    
-    // const img = req.file.path;
-    // const data = await uploadToCloudinary(img, "course");
-    // console.log(data, "ooooooooooooooo");
     const newData = new Course({
       title: title,
       description: description,
