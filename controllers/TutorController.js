@@ -21,21 +21,13 @@ const addTutor = async (req, res) => {
     const { tutorName, email, password, phone, role } = req.body;
     const img = req.file.path;
     const data = await uploadToCloudinary(img, "course");
-
-    console.log(req.body, "lll");
-
-    // Check if all details are provided
     if (!tutorName || !email || !password || !phone) {
       return res.status(403).json({
         status: false,
         alert: "All fields are required",
       });
     }
-
-    // Check if user already exists
     const existingUser = await Tutor.findOne({ email: email });
-    console.log(existingUser, "existingUser");
-
     if (existingUser) {
       return res.json({
         alert: "email already exists",
@@ -43,9 +35,9 @@ const addTutor = async (req, res) => {
         status: false,
       });
     }
-
+    let hashedPassword;
     try {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      hashedPassword = await bcrypt.hash(password, 10);
     } catch (error) {
       return res.status(500).json({
         success: false,
@@ -103,11 +95,10 @@ const sendOTP = async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 };
-const verifyOTP = async (req, res) => {
 
+const verifyOTP = async (req, res) => {
   const otp = req.body.otp.toString();
   try {
-    // Check if user is already present
     const checkUserPresent = await OTP.findOne({ otp: otp });
     console.log(checkUserPresent, "checkUserPresent");
     if (checkUserPresent) {
@@ -131,9 +122,7 @@ const verifyOTP = async (req, res) => {
 const verifyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body, "llllll");
     const exist = await Tutor.findOne({ email: email });
-    console.log(exist, "--1-1-1-1-");
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
       if (exist.is_Actived === "approved") {
@@ -211,6 +200,7 @@ const gooleRegister = async (req, res) => {
     console.log(error);
   }
 };
+
 const getCategory = async (req, res) => {
   try {
     const data = await CategoryDb.find();
@@ -219,6 +209,7 @@ const getCategory = async (req, res) => {
     console.log(err);
   }
 };
+
 const manageProfile = async (req, res) => {
   try {
     const { email } = req.query;

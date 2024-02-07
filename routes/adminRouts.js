@@ -4,7 +4,7 @@ const adminController=require('../controllers/adminController')
 
 adminRouter.post('/login',adminController.loadloagin)
 adminRouter.post('/loadusers',adminController.loaduser)
-adminRouter.post('/loadtutor',adminController.loadtutor)
+adminRouter.get('/loadtutor',adminController.loadtutor)
 adminRouter.put('/blockuser/:id',adminController.blockuser)
 adminRouter.put('/blocktutor',adminController.blocktutor)
 adminRouter.put('/approvTutor',adminController.approveTutor)

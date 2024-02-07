@@ -96,15 +96,11 @@ const userverifyOTP = async (req, res) => {
         user,
         status: true,
       });
-      // Handle the case where the user is found
     } else {
-      console.log("User not found");
-      // Handle the case where the user is not found
       return res.json({ status: false, alert: "wrong Otp" });
     }
   } catch (error) {
     console.error("Error while checking for user:", error);
-    // Handle the error appropriately
   }
 };
 

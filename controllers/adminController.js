@@ -2,18 +2,19 @@ const UserDb = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
 const Category = require("../models/categoryModel");
 const CourseDb = require("../models/courseModel");
-const bycrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const mailSender = require("../utils/mailSender");
+const mailSender = require("../config/mailSender");
 
 const loadloagin = async (req, res) => {
   try {
     const { credential, password } = req.body;
     const exist = await UserDb.findOne({ email: credential });
     if (exist) {
-      if (exist.is_admin) {
-        const compared = await bycrypt.hash(password, exist.password);
+      if (exist.is_admin === "true") {
+        console.log("ppspp");
+        const compared = await bcrypt.compare(password, exist.password);
         if (compared) {
           const admintoken = jwt.sign(
             {
@@ -24,20 +25,22 @@ const loadloagin = async (req, res) => {
               expiresIn: "1h",
             }
           );
-          res.json({ loginData: exist, status: true, admintoken });
+          return res
+            .status(200)
+            .json({ loginData: exist, status: true, admintoken });
         } else {
-          res.json({ alert: "Enterd email is wrong!" });
+          return res.status(401).json({ alert: "Entered password is wrong!" });
         }
       } else {
-        res.json({ alert: "Not valid admin" });
+        return res.status(403).json({ alert: "Not a valid admin" });
       }
     } else {
-      res.json({ alert: "Email is not existing" });
+      return res.json({ alert: "Email does not exist" });
     }
   } catch (err) {
-    res.status(500).json({
-      status: false,
-      error: "Internal server error Lotta",
+    console.error(err);
+    return res.status(500).json({
+      error: "Internal server error",
     });
   }
 };
@@ -61,6 +64,7 @@ const loaduser = async (req, res) => {
 const loadtutor = async (req, res) => {
   try {
     const tutordata = await TutorDb.find();
+    console.log(tutordata, "tutordat00000000000000000atutordata");
     if (tutordata) {
       res.json({ tutordata, status: true });
     } else {
@@ -139,7 +143,7 @@ const approveTutor = async (req, res) => {
   try {
     const { _id, data } = req.body;
     const objectId = new mongoose.Types.ObjectId(_id);
-    
+
     const tutorData = await TutorDb.findById(objectId);
 
     if (tutorData) {
@@ -189,11 +193,9 @@ const approveTutor = async (req, res) => {
 const addCategory = async (req, res) => {
   try {
     const { categoryname } = req.body;
-
     const exist = await Category.findOne({
       categoryName: { $regex: new RegExp(categoryname, "i") },
     });
-
     if (exist) {
       return res.json({ alert: "Category already exists" });
     } else {
