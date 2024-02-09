@@ -29,6 +29,7 @@ const addTutor = async (req, res) => {
     }
     const existingUser = await Tutor.findOne({ email: email });
     if (existingUser) {
+      console.log('ddssaa');
       return res.json({
         alert: "email already exists",
         success: false,
@@ -126,7 +127,7 @@ const verifyLogin = async (req, res) => {
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
       if (exist.is_Actived === "approved") {
-        if (exist.is_Block === "true") {
+        if (exist.is_Block === "false") {
           if (compared) {
             const token = createSecretToken(exist._id);
             res.cookie("tutortoken", token, {

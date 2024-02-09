@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const OTP = require("../models/otpModel");
+const CategoryDb=require('../models/categoryModel')
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
 const { uploadToCloudinary } = require("../utils/cloudinary");
@@ -336,6 +337,15 @@ const profileUpdate = async (req, res) => {
   }
 };
 
+const getCategory = async (req, res) => {
+  try {
+    const categories = await CategoryDb.find();
+    res.json({ categories, alert: 'Successfully retrieved the data' });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   adduser,
   securePassword,
@@ -350,4 +360,5 @@ module.exports = {
   UpdateProfile,
   manageProfile,
   profileUpdate,
+  getCategory
 };

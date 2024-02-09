@@ -18,6 +18,7 @@ userRouter.post('/updateProfile', upload.single("image"), userController.UpdateP
 userRouter.get('/manageProfile',userController.manageProfile)
 userRouter.get('/getCourse',Auth,CourseController.getCourse)
 userRouter.post('/updateuser',userController.profileUpdate)
+userRouter.get('/LoadCategory',userController.getCategory)
 
 
 

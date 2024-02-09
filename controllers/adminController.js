@@ -122,7 +122,7 @@ const blocktutor = async (req, res) => {
       res.json({
         newData,
         status: true,
-        alert: "Unblocked Tutor",
+        alert: "blocked Tutor",
       });
     } else {
       const newData = await TutorDb.updateOne(
@@ -132,7 +132,7 @@ const blocktutor = async (req, res) => {
       res.json({
         newData,
         status: true,
-        alert: "Tutor Blocked",
+        alert: "un",
       });
     }
   } catch (err) {
