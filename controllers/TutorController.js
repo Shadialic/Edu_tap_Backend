@@ -244,8 +244,10 @@ const UpdateProfile = async (req, res) => {
 
 const getCourse = async (req, res) => {
   try {
-    const { auter } = req.body;
-    const course = await CourseDb.findOne({ auther: auter });
+    console.log( req.body,'l');
+    const {author} = req.body; 
+    console.log(author,';;;;;;;;;;;');
+    const course = await CourseDb.find({auther: author});
     if (course) {
       console.log(course, "ppppppp");
       res.status(200).json({ success: true, course });
@@ -256,6 +258,7 @@ const getCourse = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 const managecourse = async (req, res) => {
   try {
     const { id } = req.params;

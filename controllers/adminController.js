@@ -64,7 +64,6 @@ const loaduser = async (req, res) => {
 const loadtutor = async (req, res) => {
   try {
     const tutordata = await TutorDb.find();
-    console.log(tutordata, "tutordat00000000000000000atutordata");
     if (tutordata) {
       res.json({ tutordata, status: true });
     } else {
@@ -132,7 +131,7 @@ const blocktutor = async (req, res) => {
       res.json({
         newData,
         status: true,
-        alert: "un",
+        alert: "unBlocked Tutor",
       });
     }
   } catch (err) {
