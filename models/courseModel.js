@@ -32,7 +32,7 @@ const CourseSchema=new mongoose.Schema({
         type:String,
         default:false
     },
-    
+ 
 })
 const Course=mongoose.model('Course',CourseSchema);
 module.exports=Course;

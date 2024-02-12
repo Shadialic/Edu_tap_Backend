@@ -279,6 +279,8 @@ const managecourse = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   securePassword,
   addTutor,
@@ -291,4 +293,5 @@ module.exports = {
   UpdateProfile,
   getCourse,
   managecourse,
+
 };

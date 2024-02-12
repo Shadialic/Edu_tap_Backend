@@ -1,5 +1,6 @@
 const Course = require("../models/courseModel");
 const CategoryDb=require('../models/categoryModel')
+const ChapterDb=require('../models/videoModel')
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const addCourse = async (req, res) => {
   try {
@@ -42,8 +43,40 @@ const getCourse = async (req, res) => {
   }
 }
 
+const addChapter = async (req, res) => {
+  try {
+    const {id} = req.params
+    console.log(id,"course duidddd");
+    const {chapterTitle, chapterDescription, demoVideo, chapterVideo } = req.body;
+    console.log(req.body, 'llllllllllsdfsfsd');
+    const chapter = new ChapterDb({
+      course_id:id,
+      chapterTitle,
+      chapterDescription,
+      demoVideo, 
+      chapterVideo
+    })
+    const saveData = await chapter.save();
+    res.status(200).json({ chapter: saveData, success: true, message: "Chapter added successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const getChapter=async(req,res)=>{
+  try{
+    const data=await ChapterDb.find()
+    res.json({data,status:200})
+
+  }catch(err){
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+    
+  }
+}
 
 module.exports = {
   addCourse,
-  getCourse
+  getCourse,
+  addChapter,
+  getChapter
 };
