@@ -18,6 +18,9 @@ vendorRouter.post('/vendor/getcoures',vendorController.getCourse)
 vendorRouter.put('/vendor/manageCourse/:id',vendorController.managecourse)
 vendorRouter.post('/vendor/addChapter/:id',CourseController.addChapter);
 vendorRouter.get('/vendor/getChapter',CourseController.getChapter);
+vendorRouter.put('/vendor/blockunblcoCourse/:id',CourseController.courseManage);
+
+
 
 
 

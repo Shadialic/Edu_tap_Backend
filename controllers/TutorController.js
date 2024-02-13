@@ -224,7 +224,6 @@ const manageProfile = async (req, res) => {
 };
 const UpdateProfile = async (req, res) => {
   try {
-    console.log(req.body, "[[][][");
     const { email } = req.body;
     const img = req.file.path;
     const data = await uploadToCloudinary(img, "profile");
@@ -244,12 +243,9 @@ const UpdateProfile = async (req, res) => {
 
 const getCourse = async (req, res) => {
   try {
-    console.log( req.body,'l');
     const {author} = req.body; 
-    console.log(author,';;;;;;;;;;;');
     const course = await CourseDb.find({auther: author});
     if (course) {
-      console.log(course, "ppppppp");
       res.status(200).json({ success: true, course });
     } else {
       res.status(404).json({ success: false, message: "Course not found" });
@@ -262,10 +258,8 @@ const getCourse = async (req, res) => {
 const managecourse = async (req, res) => {
   try {
     const { id } = req.params;
-
     const result = await CourseDb.deleteOne({ _id: id });
     if (result.deletedCount === 1) {
-      console.log(`Document with ID ${id} deleted successfully.`);
       return res.json({ result, alert: "Course canceled successfully." });
     } else {
       console.log(`Document with ID ${id} not found.`);

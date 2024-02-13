@@ -32,6 +32,10 @@ const CourseSchema=new mongoose.Schema({
         type:String,
         default:false
     },
+    is_Active:{
+        type:String,
+        default:false
+    }
  
 })
 const Course=mongoose.model('Course',CourseSchema);

@@ -51,6 +51,11 @@ const userSchema = mongoose.Schema({
   year: {
     type: Number,
   },
+  courses: [ 
+  {
+    courseId: String,
+  }
+]
 });
 const user = mongoose.model("User", userSchema);
 module.exports = user;

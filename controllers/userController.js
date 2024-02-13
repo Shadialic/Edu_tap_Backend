@@ -3,9 +3,11 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const OTP = require("../models/otpModel");
 const CategoryDb=require('../models/categoryModel')
+const CourseDb=require('../models/courseModel')
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
 const { uploadToCloudinary } = require("../utils/cloudinary");
+const { default: mongoose } = require("mongoose");
 
 const securePassword = async (password) => {
   try {
@@ -345,6 +347,59 @@ const getCategory = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+const purchaseCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userid } = req.body; 
+    console.log(id, 'dssa', userid);
+
+    const user = await User.findOne({ _id: userid });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const updateResult = await User.updateOne(
+      { _id: userid },
+      { $push: { courses: { courseId: id } } }
+    );
+    
+    console.log(updateResult,'-=-=-=-=-=-');
+
+    res.status(200).json({ success: true, message: 'Course purchased successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const enrollments = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    console.log(req.body, 'dsa', userId);
+
+    const userData = await User.find({ _id: userId });
+    console.log(userData, 'ppp');
+
+    const allCourseIds = new Set();
+
+    userData.forEach(user => {
+      user.courses.forEach(course => {
+        allCourseIds.add(course.courseId);
+      });
+    });
+
+    console.log([...allCourseIds], 'allCourseIds');
+    const coursesData = await CourseDb.find({ _id: { $in: [...allCourseIds] } });
+
+    console.log(coursesData, 'coursesData');
+
+    res.status(200).json({ courses: coursesData,status:true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 
 module.exports = {
   adduser,
@@ -360,5 +415,7 @@ module.exports = {
   UpdateProfile,
   manageProfile,
   profileUpdate,
-  getCategory
+  getCategory,
+  purchaseCourse,
+  enrollments
 };

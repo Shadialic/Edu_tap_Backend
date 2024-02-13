@@ -16,9 +16,13 @@ userRouter.post('/userRegisterWithGoole',userController.googleRegister)
 userRouter.get('/getUser',userController.getUser)
 userRouter.post('/updateProfile', upload.single("image"), userController.UpdateProfile);
 userRouter.get('/manageProfile',userController.manageProfile)
-userRouter.get('/getCourse',Auth,CourseController.getCourse)
-userRouter.post('/updateuser',userController.profileUpdate)
+userRouter.get('/getCourse',CourseController.getCourse)
+userRouter.post('/updateuser',Auth,userController.profileUpdate)
 userRouter.get('/LoadCategory',userController.getCategory)
+userRouter.put('/purchaseCourse/:id',Auth,userController.purchaseCourse)
+userRouter.post('/enrollments',userController.enrollments)
+
+
 
 
 
