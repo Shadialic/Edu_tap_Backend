@@ -1,14 +1,16 @@
 const User = require("../models/userModel");
+const TutorDb=require('../models/tutorModel')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const OTP = require("../models/otpModel");
-const CategoryDb=require('../models/categoryModel')
-const CourseDb=require('../models/courseModel')
+const CategoryDb = require("../models/categoryModel");
+const CourseDb = require("../models/courseModel");
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
 const { uploadToCloudinary } = require("../utils/cloudinary");
-const { default: mongoose } = require("mongoose");
-
+const ChapterDb = require("../models/videoModel");
+const ReviewDb=require('../models/reviewModel')
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const securePassword = async (password) => {
   try {
     const passwordHash = await bcrypt.hash(password, 10);
@@ -229,32 +231,32 @@ const googleRegister = async (req, res) => {
     const { id, name, email, phone } = req.body;
     const data = await User.findOne({ email: email });
     console.log(req.body);
-    if(!data){
-    const hashPassword = await securePassword(id);
-    const googleUser = new User({
-      userName: name,
-      email,
-      phone: phone || "000000000000",
-      password: hashPassword,
-      is_google: true,
-      is_Active: true,
-    });
-    const userData = await googleUser.save();
-    if (userData) {
-      const token = createSecretToken(userData._id);
-      res.cookie("token", token, {
-        withCredentials: true,
-        httpOnly: false,
+    if (!data) {
+      const hashPassword = await securePassword(id);
+      const googleUser = new User({
+        userName: name,
+        email,
+        phone: phone || "000000000000",
+        password: hashPassword,
+        is_google: true,
+        is_Active: true,
       });
-      if (token) {
-        return res.status(200).json({
-          created: true,
-          alert: "Google registration successful",
-          token,
+      const userData = await googleUser.save();
+      if (userData) {
+        const token = createSecretToken(userData._id);
+        res.cookie("token", token, {
+          withCredentials: true,
+          httpOnly: false,
         });
+        if (token) {
+          return res.status(200).json({
+            created: true,
+            alert: "Google registration successful",
+            token,
+          });
+        }
       }
-    }
-    }else{
+    } else {
       const token = createSecretToken(data._id);
       res.cookie("token", token, {
         withCredentials: true,
@@ -311,7 +313,8 @@ const manageProfile = async (req, res) => {
 
 const profileUpdate = async (req, res) => {
   try {
-    const { userName, phone, Country, email,Qualification,year,Institute } = req.body;
+    const { userName, phone, Country, email, Qualification, year, Institute } =
+      req.body;
     if (!email) {
       return res.status(400).json({ alert: "Email is required" });
     }
@@ -322,9 +325,9 @@ const profileUpdate = async (req, res) => {
           userName: userName,
           phone: phone,
           Country: Country,
-          Qualification:Qualification,
-          year:year,
-          Institute:Institute,
+          Qualification: Qualification,
+          year: year,
+          Institute: Institute,
         },
       },
       { new: true }
@@ -342,64 +345,132 @@ const profileUpdate = async (req, res) => {
 const getCategory = async (req, res) => {
   try {
     const categories = await CategoryDb.find();
-    res.json({ categories, alert: 'Successfully retrieved the data' });
+    res.json({ categories, alert: "Successfully retrieved the data" });
   } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 const purchaseCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userid } = req.body; 
-    console.log(id, 'dssa', userid);
+    const { userid } = req.body;
+    console.log(id, "dssa", userid);
 
     const user = await User.findOne({ _id: userid });
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const updateResult = await User.updateOne(
       { _id: userid },
       { $push: { courses: { courseId: id } } }
     );
-    
-    console.log(updateResult,'-=-=-=-=-=-');
 
-    res.status(200).json({ success: true, message: 'Course purchased successfully' });
+    console.log(updateResult, "-=-=-=-=-=-");
+
+    res
+      .status(200)
+      .json({ success: true, message: "Course purchased successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 const enrollments = async (req, res) => {
   try {
     const { userId } = req.body;
-    console.log(req.body, 'dsa', userId);
+    console.log(req.body, "dsa", userId);
 
     const userData = await User.find({ _id: userId });
-    console.log(userData, 'ppp');
+    console.log(userData, "ppp");
 
     const allCourseIds = new Set();
 
-    userData.forEach(user => {
-      user.courses.forEach(course => {
+    userData.forEach((user) => {
+      user.courses.forEach((course) => {
         allCourseIds.add(course.courseId);
       });
     });
 
-    console.log([...allCourseIds], 'allCourseIds');
-    const coursesData = await CourseDb.find({ _id: { $in: [...allCourseIds] } });
-
-    console.log(coursesData, 'coursesData');
-
-    res.status(200).json({ courses: coursesData,status:true });
+    console.log([...allCourseIds], "allCourseIds");
+    const coursesData = await CourseDb.find({
+      _id: { $in: [...allCourseIds] },
+    });
+    const chapter = await ChapterDb.find();
+    const tutors=await TutorDb.find({is_Actived:'approved'})
+    console.log(tutors,'tutors');
+    console.log(chapter, "coursesData");
+    res.status(200).json({ courses: coursesData, chapter,tutors, status: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+const checkout = async (req, res) => {
+  try {
+    const { courseid  } = req.body;
+    console.log(req.body, 'wwww');
+    
+    // Assuming ChapterDb.find() returns the course data with a 'price' field
+    const courseData = await CourseDb.find({ _id: courseid });
+    console.log(courseData,'iiii');
+    if (!courseData || !courseData.length) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+      
+    const amountInPaise = courseData[0].price; 
+ 
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount:amountInPaise * 100,
+      currency: "inr",
+      payment_method_types: ["card"],
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    })
+    
+    console.log(paymentIntent,"tttttttttttttttttttttttt");
+    
+    res.json({ clientSecret: paymentIntent.client_secret,amountInPaise }); 
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const addReview = async (req, res) => {
+  try {
+    const { data } = req.body;
+const { review, userName, currntDate, courseId } = data;
+
+    // const reviewDate = new Date(currntDate).toLocaleDateString();
+    const newReview = new ReviewDb({
+      description: review,
+      author: userName,
+      date: currntDate,
+      courseId: courseId
+    });
+    const savedReview = await newReview.save();
+    res.json({ message: 'Review successfully added', review: savedReview });
+  } catch (err) {
+    console.error('Error adding review:', err);
+    res.status(500).json({ error: 'Failed to add review' });
+  }
+};
+
+const fetchReview=async(req,res)=>{
+  try{
+    const data= await ReviewDb.find();
+    console.log(data,'lock');
+    res.json({data})
+  }catch(err){
+    res.status(500).json({ error: "Internal server error" });
+
   }
 }
-
 
 module.exports = {
   adduser,
@@ -417,5 +488,8 @@ module.exports = {
   profileUpdate,
   getCategory,
   purchaseCourse,
-  enrollments
+  enrollments,
+  checkout,
+  addReview,
+  fetchReview
 };

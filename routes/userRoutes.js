@@ -21,6 +21,12 @@ userRouter.post('/updateuser',Auth,userController.profileUpdate)
 userRouter.get('/LoadCategory',userController.getCategory)
 userRouter.put('/purchaseCourse/:id',Auth,userController.purchaseCourse)
 userRouter.post('/enrollments',userController.enrollments)
+userRouter.post('/checkout',userController.checkout)
+userRouter.post('/addReview',userController.addReview)
+userRouter.get('/fetchReview',userController.fetchReview)
+
+
+
 
 
 

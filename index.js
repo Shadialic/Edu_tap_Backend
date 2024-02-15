@@ -7,6 +7,8 @@ const path = require("path");
 
 const app = express();
 const { server, io } = require("./websocket/websocket");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 // Middleware
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
