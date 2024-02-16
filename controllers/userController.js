@@ -11,6 +11,8 @@ const { uploadToCloudinary } = require("../utils/cloudinary");
 const ChapterDb = require("../models/videoModel");
 const ReviewDb=require('../models/reviewModel')
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+
 const securePassword = async (password) => {
   try {
     const passwordHash = await bcrypt.hash(password, 10);
@@ -409,32 +411,34 @@ const enrollments = async (req, res) => {
 };
 const checkout = async (req, res) => {
   try {
-    const { courseid  } = req.body;
-    console.log(req.body, 'wwww');
-    
-    // Assuming ChapterDb.find() returns the course data with a 'price' field
-    const courseData = await CourseDb.find({ _id: courseid });
-    console.log(courseData,'iiii');
-    if (!courseData || !courseData.length) {
+    const { courseid } = req.body;
+    const courseData = await CourseDb.findById(courseid);
+    if (!courseData) {
       return res.status(404).json({ error: "Course not found" });
     }
-
-      
-    const amountInPaise = courseData[0].price; 
- 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount:amountInPaise * 100,
-      currency: "inr",
-      payment_method_types: ["card"],
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    })
+    const amountInPaise = courseData.price *100; 
+    console.log(courseData,'==============',amountInPaise);
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'inr',
+            product_data: {
+              name: 'Course', 
+            },
+            unit_amount: amountInPaise, 
+          },
+          quantity: 1, 
+        },
+      ],
+      mode: 'payment',
+      success_url: 'https://localhost:5173/success', 
+      cancel_url: 'https://localhost:5173/cancel', 
+    });
+    console.log(session,'sessionsession');
     
-    console.log(paymentIntent,"tttttttttttttttttttttttt");
-    
-    res.json({ clientSecret: paymentIntent.client_secret,amountInPaise }); 
-
+    res.json({ sessionId: session.id }); 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
