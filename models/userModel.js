@@ -55,7 +55,8 @@ const userSchema = mongoose.Schema({
   {
     courseId: String,
   }
-]
+],
+
 });
 const user = mongoose.model("User", userSchema);
 module.exports = user;
