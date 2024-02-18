@@ -2,7 +2,9 @@ const messageDb = require("../models/messageModel");
 
 const createMessage = async (req, res) => {
   try {
-    const { chatId, senderId, text } = req.body;
+    const { data} = req.body;
+    const { chatId, senderId, text } =data;
+    console.log(req.body,'1111111111',senderId);
     const message = new messageDb({
       chatId,
       senderId,

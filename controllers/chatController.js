@@ -2,10 +2,12 @@ const chatDb = require("../models/chatModel");
 
 const createChat = async (req, res) => {
   try {
-    const { firstId, secondId } = req.body;
+    console.log(req.body,'lllllllllllllllllllllll');
+    const { firstId,secondId } = req.body;
     const chat = await chatDb.findOne({
       members: { $all: [firstId, secondId] },
     });
+    console.log(chat,'chat');
     if (chat) {
       return res.status(200).json(chat);
     }
@@ -13,6 +15,7 @@ const createChat = async (req, res) => {
       members: [firstId, secondId],
     });
     const response = await newChat.save();
+    console.log(response,'responseresponse');
     return res.json({ response });
   } catch (err) {
     console.log(err);
