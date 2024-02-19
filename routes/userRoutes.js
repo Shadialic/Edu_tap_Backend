@@ -27,21 +27,32 @@ userRouter.post(
   upload.single("image"),
   userController.UpdateProfile
 );
+
+//  Get
 userRouter.get("/manageProfile", userController.manageProfile);
 userRouter.get("/getCourse", CourseController.getCourse);
-userRouter.post("/updateuser", Auth, userController.profileUpdate);
 userRouter.get("/LoadCategory", userController.getCategory);
-userRouter.put("/purchaseCourse/:id", Auth, userController.purchaseCourse);
+userRouter.get("/fetchReview", userController.fetchReview);
+userRouter.get("/findUserChats/:userId", findUserChats);
+userRouter.get("/findChat/:firstId/:secondId", findChats);
+userRouter.get("/getMeassage/:chatId", getMessage);
+userRouter.get("/getCommnets/:id",userController.getCommnets);
+
+
+// Post
+userRouter.post("/updateuser", Auth, userController.profileUpdate);
 userRouter.post("/enrollments", userController.enrollments);
 userRouter.post("/checkout", userController.checkout);
 userRouter.post("/addReview", userController.addReview);
-userRouter.get("/fetchReview", userController.fetchReview);
 userRouter.post("/createChat", createChat);
-userRouter.get("/findUserChats/:userId", findUserChats);
-userRouter.get("/findChat/:firstId/:secondId", findChats);
-
 userRouter.post("/createMessage", createMessage);
-userRouter.get("/getMeassage/:chatId", getMessage);
-// userRouter.get("/findChat/:firstId/:secondId", findChats);
+userRouter.post("/postCommnets", userController.postCommnets);
+
+
+
+// Put
+userRouter.put("/purchaseCourse/:id", Auth, userController.purchaseCourse);
+
+
 
 module.exports = userRouter;

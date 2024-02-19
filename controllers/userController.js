@@ -10,6 +10,7 @@ const { createSecretToken } = require("../utils/SecretToken");
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const ChapterDb = require("../models/videoModel");
 const ReviewDb=require('../models/reviewModel')
+const CommnetDb=require('../models/commentModel')
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 
@@ -472,7 +473,41 @@ const fetchReview=async(req,res)=>{
     res.json({data})
   }catch(err){
     res.status(500).json({ error: "Internal server error" });
+  }
+}
 
+const postCommnets=async(req,res)=>{
+  console.log(req.body,'ddddddddddddd');
+  const {data}=req.body;
+  const { comment,auther,Date,chapterId,Image}=data;
+try{
+  const comments=new CommnetDb({
+    comment:comment,
+    auther:auther,
+    Date:Date,
+    chapterId:chapterId,
+    Image:Image
+  })
+  const saveComment=await comments.save();
+  res.json({status:true,saveComment})
+}catch(err){
+  res.status(500).json({ error: "Internal server error" });
+}
+}
+
+const getCommnets=async(req,res)=>{
+  const {id}=req.params;
+  console.log(id,'ppp');
+  try{
+    const comments=await CommnetDb.find({chapterId:id})
+  console.log(comments,'comments');
+
+    res.json({comments,status:true})
+
+
+  }catch(err){
+  res.status(500).json({ error: "Internal server error" });
+    
   }
 }
 
@@ -495,5 +530,7 @@ module.exports = {
   enrollments,
   checkout,
   addReview,
-  fetchReview
+  fetchReview,
+  postCommnets,
+  getCommnets
 };

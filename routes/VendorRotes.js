@@ -4,7 +4,7 @@ const vendorController=require('../controllers/tutorController');
 const CourseController=require('../controllers/courseController')
 // const {uploadImage} = require('../config/cloudinary');
 const upload=require('../middleware/multer')
-
+const {findTutorChats}=require('../controllers/chatController')
 vendorRouter.post('/vendor/signup',upload.single("image"),vendorController.addTutor);
 vendorRouter.post('/vendor/sendotp',vendorController.sendOTP);
 vendorRouter.post('/vendor/verifyotp',vendorController.verifyOTP);
@@ -19,6 +19,7 @@ vendorRouter.put('/vendor/manageCourse/:id',vendorController.managecourse)
 vendorRouter.post('/vendor/addChapter/:id',CourseController.addChapter);
 vendorRouter.get('/vendor/getChapter',CourseController.getChapter);
 vendorRouter.put('/vendor/blockunblcoCourse/:id',CourseController.courseManage);
+vendorRouter.get("/findTutorChats/:tutorId", findTutorChats);
 
 
 

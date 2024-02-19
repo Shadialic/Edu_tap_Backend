@@ -44,6 +44,28 @@ const findUserChats = async (req, res) => {
       res.status(500).json("");
     }
   };
+  const findTutorChats = async (req, res) => {
+    const tutorId = req.params.tutorId;
+    console.log(tutorId,'llllllllllllllll');
+    try {
+      const chats = await chatDb.find({
+        members: { $in: [tutorId] },
+      }).populate({
+        path: "members",
+        select: "userName image",
+        match: { _id: { $ne: tutorId } },
+        model: "User",
+      })
+      console.log(chats,'chatschats');
+      res.status(200).json({
+        chats: chats,
+        success: true,
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json("");
+    }
+  };
   
 
 const findChats = async (req, res) => {
@@ -66,6 +88,7 @@ const findChats = async (req, res) => {
 module.exports = {
     createChat,
     findUserChats,
-    findChats
+    findChats,
+    findTutorChats
 
 }
