@@ -434,7 +434,7 @@ const checkout = async (req, res) => {
         },
       ],
       mode: 'payment',
-      success_url: 'https://localhost:5173/success', 
+      success_url: 'http://localhost:5173/success', 
       cancel_url: 'https://localhost:5173/cancel', 
     });
     console.log(session,'sessionsession');

@@ -1,21 +1,26 @@
 const messageDb = require("../models/messageModel");
+const { getRecipientSocketId, io } = require("../socket/socket");
 
 const createMessage = async (req, res) => {
   try {
     const { data} = req.body;
-    const { chatId, senderId, text } =data;
-    console.log(req.body,'1111111111',senderId);
+    const { chatId, senderId, text ,recipientId} =data;
+    // console.log(req.body,'1111111111',recipientId);
     const message = new messageDb({
       chatId,
       senderId,
       text,
     });
     const saveMeassage = await message.save();
+    const recipientSocketId = getRecipientSocketId(recipientId)
+    // console.log(recipientSocketId,'------------recipientSocketId-----------');
+    io.to(recipientSocketId).emit('newMessage',saveMeassage)
     res.status(200).json({
       saveMeassage,
       success: true,
     });
   } catch (err) {
+    console.log(err.message)
     res.status(500).json(err);
   }
 };
