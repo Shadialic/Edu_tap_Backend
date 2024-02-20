@@ -5,7 +5,6 @@ const createMessage = async (req, res) => {
   try {
     const { data} = req.body;
     const { chatId, senderId, text ,recipientId} =data;
-    // console.log(req.body,'1111111111',recipientId);
     const message = new messageDb({
       chatId,
       senderId,
@@ -13,7 +12,6 @@ const createMessage = async (req, res) => {
     });
     const saveMeassage = await message.save();
     const recipientSocketId = getRecipientSocketId(recipientId)
-    // console.log(recipientSocketId,'------------recipientSocketId-----------');
     io.to(recipientSocketId).emit('newMessage',saveMeassage)
     res.status(200).json({
       saveMeassage,

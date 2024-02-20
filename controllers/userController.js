@@ -1,7 +1,6 @@
 const User = require("../models/userModel");
-const TutorDb=require('../models/tutorModel')
+const TutorDb = require("../models/tutorModel");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const OTP = require("../models/otpModel");
 const CategoryDb = require("../models/categoryModel");
 const CourseDb = require("../models/courseModel");
@@ -9,10 +8,10 @@ const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const ChapterDb = require("../models/videoModel");
-const ReviewDb=require('../models/reviewModel')
-const CommnetDb=require('../models/commentModel')
+const ReviewDb = require("../models/reviewModel");
+const chatDb=require('../models/chatModel')
+const CommnetDb = require("../models/commentModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
 
 const securePassword = async (password) => {
   try {
@@ -29,12 +28,9 @@ const adduser = async (req, res) => {
     console.log(req.body);
     const spassword = await securePassword(password);
     const exist = await User.findOne({ email: credential });
-    console.log(exist, "hhhhh");
     if (exist) {
       res.json({ alert: "email already exists", status: false });
     } else {
-      console.log(exist, "hhhhh");
-
       const users = new User({
         userName: name,
         email: credential,
@@ -56,7 +52,6 @@ const adduser = async (req, res) => {
     }
   } catch (err) {
     res.status(400);
-    console.log(err, "dddddd");
   }
 };
 
@@ -97,7 +92,6 @@ const userverifyOTP = async (req, res) => {
       const user = await User.findOne({ email: checkUserPresent.email });
       user.is_Active = true;
       user.save();
-      console.log("User found:", user);
       return res.status(200).json({
         success: true,
         alert: "User Activated successfully",
@@ -401,10 +395,12 @@ const enrollments = async (req, res) => {
       _id: { $in: [...allCourseIds] },
     });
     const chapter = await ChapterDb.find();
-    const tutors=await TutorDb.find({is_Actived:'approved'})
-    console.log(tutors,'tutors');
+    const tutors = await TutorDb.find({ is_Actived: "approved" });
+    console.log(tutors, "tutors");
     console.log(chapter, "coursesData");
-    res.status(200).json({ courses: coursesData, chapter,tutors, status: true });
+    res
+      .status(200)
+      .json({ courses: coursesData, chapter, tutors, status: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
@@ -417,29 +413,28 @@ const checkout = async (req, res) => {
     if (!courseData) {
       return res.status(404).json({ error: "Course not found" });
     }
-    const amountInPaise = courseData.price *100; 
-    console.log(courseData,'==============',amountInPaise);
+    const amountInPaise = courseData.price * 100;
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
-            currency: 'inr',
+            currency: "inr",
             product_data: {
-              name: 'Course', 
+              name: "Course",
             },
-            unit_amount: amountInPaise, 
+            unit_amount: amountInPaise,
           },
-          quantity: 1, 
+          quantity: 1,
         },
       ],
-      mode: 'payment',
-      success_url: 'http://localhost:5173/success', 
-      cancel_url: 'https://localhost:5173/cancel', 
+      mode: "payment",
+      success_url: "http://localhost:5173/success",
+      cancel_url: "https://localhost:5173/cancel",
     });
-    console.log(session,'sessionsession');
-    
-    res.json({ sessionId: session.id }); 
+    console.log(session, "sessionsession");
+
+    res.json({ sessionId: session.id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
@@ -449,67 +444,59 @@ const checkout = async (req, res) => {
 const addReview = async (req, res) => {
   try {
     const { data } = req.body;
-const { review, userName, currntDate, courseId } = data;
-
-    // const reviewDate = new Date(currntDate).toLocaleDateString();
+    const { review, userName, currntDate, courseId } = data;
     const newReview = new ReviewDb({
       description: review,
       author: userName,
       date: currntDate,
-      courseId: courseId
+      courseId: courseId,
     });
     const savedReview = await newReview.save();
-    res.json({ message: 'Review successfully added', review: savedReview });
+
+    res.json({ message: "Review successfully added", review: savedReview });
   } catch (err) {
-    console.error('Error adding review:', err);
-    res.status(500).json({ error: 'Failed to add review' });
+    console.error("Error adding review:", err);
+    res.status(500).json({ error: "Failed to add review" });
   }
 };
 
-const fetchReview=async(req,res)=>{
-  try{
-    const data= await ReviewDb.find();
-    console.log(data,'lock');
-    res.json({data})
-  }catch(err){
+const fetchReview = async (req, res) => {
+  try {
+    const data = await ReviewDb.find();
+    const chat = await chatDb.find()
+     res.json({ data,chat });
+  } catch (err) {
     res.status(500).json({ error: "Internal server error" });
   }
-}
+};
 
-const postCommnets=async(req,res)=>{
-  console.log(req.body,'ddddddddddddd');
-  const {data}=req.body;
-  const { comment,auther,Date,chapterId,Image}=data;
-try{
-  const comments=new CommnetDb({
-    comment:comment,
-    auther:auther,
-    Date:Date,
-    chapterId:chapterId,
-    Image:Image
-  })
-  const saveComment=await comments.save();
-  res.json({status:true,saveComment})
-}catch(err){
-  res.status(500).json({ error: "Internal server error" });
-}
-}
-
-const getCommnets=async(req,res)=>{
-  const {id}=req.params;
-  console.log(id,'ppp');
-  try{
-    const comments=await CommnetDb.find({chapterId:id})
-  console.log(comments,'comments');
-
-    res.json({comments,status:true})
-
-
-  }catch(err){
-  res.status(500).json({ error: "Internal server error" });
-    
+const postCommnets = async (req, res) => {
+  const { data } = req.body;
+  const { comment, auther, Date, chapterId, Image } = data;
+  try {
+    const comments = new CommnetDb({
+      comment: comment,
+      auther: auther,
+      Date: Date,
+      chapterId: chapterId,
+      Image: Image,
+    });
+    const saveComment = await comments.save();
+    res.json({ status: true, saveComment });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
   }
-}
+};
+
+const getCommnets = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const comments = await CommnetDb.find({ chapterId: id });
+    res.json({ comments, status: true });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
   adduser,
@@ -532,5 +519,5 @@ module.exports = {
   addReview,
   fetchReview,
   postCommnets,
-  getCommnets
+  getCommnets,
 };
