@@ -13,7 +13,6 @@ const loadloagin = async (req, res) => {
     const exist = await UserDb.findOne({ email: credential });
     if (exist) {
       if (exist.is_admin === "true") {
-        console.log("ppspp");
         const compared = await bcrypt.compare(password, exist.password);
         if (compared) {
           const admintoken = jwt.sign(
@@ -80,7 +79,6 @@ const loadtutor = async (req, res) => {
 const blockuser = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id, "idxx");
     const objectId = new mongoose.Types.ObjectId(id);
     const user = await UserDb.findOne({ _id: objectId });
     if (user.is_Active == "true") {
@@ -108,6 +106,7 @@ const blockuser = async (req, res) => {
     res.status(500).json({ alert: "Internal Server Error" });
   }
 };
+
 const blocktutor = async (req, res) => {
   try {
     const id = req.body._id;
@@ -138,13 +137,12 @@ const blocktutor = async (req, res) => {
     res.status(500).json({ alert: "Internal Server Error" });
   }
 };
+
 const approveTutor = async (req, res) => {
   try {
     const { _id, data } = req.body;
     const objectId = new mongoose.Types.ObjectId(_id);
-
     const tutorData = await TutorDb.findById(objectId);
-
     if (tutorData) {
       if (data === "approved") {
         await TutorDb.updateOne({ _id: objectId }, { is_Actived: data });
@@ -160,7 +158,6 @@ const approveTutor = async (req, res) => {
            <p>Once again, congratulations and thank you for choosing Edu-tap!</p>
            <p>Best regards,<br/>Edu-tap Team</p>`
         );
-
         res.status(200).json({ tutorData, alert: "approved tutor" });
       } else if (data === "rejected") {
         tutorData.is_Actived = "rejected";
@@ -230,7 +227,6 @@ const loadCategory = async (req, res) => {
 const managecategory = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id, "ddds");
     const objectId = new mongoose.Types.ObjectId(id);
     const exist = await Category.findOne({ _id: objectId });
     if (exist && exist.is_Block === "false") {
@@ -272,6 +268,7 @@ const loadCourse = async (req, res) => {
     });
   }
 };
+
 const manageCourse = async (req, res) => {
   try {
     const id = req.body;

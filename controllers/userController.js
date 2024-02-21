@@ -9,7 +9,8 @@ const { createSecretToken } = require("../utils/SecretToken");
 const { uploadToCloudinary } = require("../utils/cloudinary");
 const ChapterDb = require("../models/videoModel");
 const ReviewDb = require("../models/reviewModel");
-const chatDb=require('../models/chatModel')
+const chatDb = require("../models/chatModel");
+const blogDb = require("../models/blogModel");
 const CommnetDb = require("../models/commentModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -18,14 +19,13 @@ const securePassword = async (password) => {
     const passwordHash = await bcrypt.hash(password, 10);
     return passwordHash;
   } catch (err) {
-    console.log(err.message);
+    return res.status(500).json({ err: "Internal server error" });
   }
 };
 
 const adduser = async (req, res) => {
   try {
     const { name, credential, phone, password } = req.body;
-    console.log(req.body);
     const spassword = await securePassword(password);
     const exist = await User.findOne({ email: credential });
     if (exist) {
@@ -79,7 +79,6 @@ const sendOTP = async (req, res) => {
       otp,
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
 };
@@ -121,7 +120,6 @@ const verifyLogin = async (req, res) => {
                 withCredentials: true,
                 httpOnly: false,
               });
-              console.log(token, "uuu");
               res.json({
                 userData: exist,
                 status: true,
@@ -189,7 +187,6 @@ const passverifyOTP = async (req, res) => {
       const newuser = await User.findOne({ email: checkUserPresent.email });
       newuser.is_Active = true;
       newuser.save();
-      console.log("User found:", newuser);
       return res.status(200).json({
         success: true,
         alert: "User Activated successfully",
@@ -219,7 +216,7 @@ const updatePass = async (req, res) => {
       alert: "successfully compleated",
     });
   } catch (err) {
-    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -227,7 +224,6 @@ const googleRegister = async (req, res) => {
   try {
     const { id, name, email, phone } = req.body;
     const data = await User.findOne({ email: email });
-    console.log(req.body);
     if (!data) {
       const hashPassword = await securePassword(id);
       const googleUser = new User({
@@ -291,7 +287,6 @@ const UpdateProfile = async (req, res) => {
       { $set: { image: data.url } },
       { new: true }
     );
-    console.log(userData, "userData");
     res.json({ userData, alert: "sucsessfully get the data" });
   } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
@@ -351,20 +346,14 @@ const purchaseCourse = async (req, res) => {
   try {
     const { id } = req.params;
     const { userid } = req.body;
-    console.log(id, "dssa", userid);
-
     const user = await User.findOne({ _id: userid });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-
     const updateResult = await User.updateOne(
       { _id: userid },
       { $push: { courses: { courseId: id } } }
     );
-
-    console.log(updateResult, "-=-=-=-=-=-");
-
     res
       .status(200)
       .json({ success: true, message: "Course purchased successfully" });
@@ -377,27 +366,18 @@ const purchaseCourse = async (req, res) => {
 const enrollments = async (req, res) => {
   try {
     const { userId } = req.body;
-    console.log(req.body, "dsa", userId);
-
     const userData = await User.find({ _id: userId });
-    console.log(userData, "ppp");
-
     const allCourseIds = new Set();
-
     userData.forEach((user) => {
       user.courses.forEach((course) => {
         allCourseIds.add(course.courseId);
       });
     });
-
-    console.log([...allCourseIds], "allCourseIds");
     const coursesData = await CourseDb.find({
       _id: { $in: [...allCourseIds] },
     });
     const chapter = await ChapterDb.find();
     const tutors = await TutorDb.find({ is_Actived: "approved" });
-    console.log(tutors, "tutors");
-    console.log(chapter, "coursesData");
     res
       .status(200)
       .json({ courses: coursesData, chapter, tutors, status: true });
@@ -406,6 +386,7 @@ const enrollments = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 const checkout = async (req, res) => {
   try {
     const { courseid } = req.body;
@@ -432,8 +413,6 @@ const checkout = async (req, res) => {
       success_url: "http://localhost:5173/success",
       cancel_url: "https://localhost:5173/cancel",
     });
-    console.log(session, "sessionsession");
-
     res.json({ sessionId: session.id });
   } catch (err) {
     console.error(err);
@@ -452,10 +431,8 @@ const addReview = async (req, res) => {
       courseId: courseId,
     });
     const savedReview = await newReview.save();
-
     res.json({ message: "Review successfully added", review: savedReview });
   } catch (err) {
-    console.error("Error adding review:", err);
     res.status(500).json({ error: "Failed to add review" });
   }
 };
@@ -463,8 +440,8 @@ const addReview = async (req, res) => {
 const fetchReview = async (req, res) => {
   try {
     const data = await ReviewDb.find();
-    const chat = await chatDb.find()
-     res.json({ data,chat });
+    const chat = await chatDb.find();
+    res.json({ data, chat });
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });
   }
@@ -498,6 +475,35 @@ const getCommnets = async (req, res) => {
   }
 };
 
+const createBlog = async (req, res) => {
+  const { author, description, date } = req.body;
+  try {
+    console.log(req.body,'req.body');
+    const img = req.file.path;
+    const data = await uploadToCloudinary(img, "blog");
+    console.log(data,'data');
+
+    const user = await User.findOne({ email: author });
+    console.log(user,'user');
+
+    if (user) {
+      const blodData = new blogDb({
+        author,
+        description,
+        date,
+        image: data.url,
+      });
+      const blog = await blodData.save();
+      res
+        .status(200)
+        .json({ status: true, alert: "successfully created", blog, user });
+    }
+  } catch (err) {
+    console.log(err,'ppppppppppppppp');
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   adduser,
   securePassword,
@@ -520,4 +526,5 @@ module.exports = {
   fetchReview,
   postCommnets,
   getCommnets,
+  createBlog,
 };

@@ -1,8 +1,8 @@
 const Course = require("../models/courseModel");
 const CategoryDb = require("../models/categoryModel");
 const ChapterDb = require("../models/videoModel");
-const { uploadToCloudinary } = require("../utils/cloudinary");
 const mongoose = require("mongoose");
+
 const addCourse = async (req, res) => {
   try {
     const {
@@ -34,8 +34,6 @@ const addCourse = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log("sddafdaf");
-    console.error("Error in addCourse:", err);
     res.status(400).json({ status: false, alert: "Server error" });
   }
 };
@@ -44,22 +42,17 @@ const getCourse = async (req, res) => {
   try {
     const CourseData = await Course.find();
     const category = await CategoryDb.find();
-    console.log(category, "category");
-    console.log(CourseData, "CourseData");
     res.json({ CourseData, category, status: true });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ err: "Internal Server Error" });
   }
 };
 
 const addChapter = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id, "course duidddd");
     const { chapterTitle, chapterDescription, demoVideo, chapterVideo } =
       req.body;
-    console.log(req.body, "llllllllllsdfsfsd");
     const chapter = new ChapterDb({
       course_id: id,
       chapterTitle,
@@ -90,47 +83,36 @@ const getChapter = async (req, res) => {
 const manageChapter = async (req, res) => {
   try {
     const { id } = req.params;
-
-    console.log(id, "id");
     const result = await ChapterDb.deleteOne({ _id: id });
     if (result.deletedCount === 1) {
-      return res.json({ result, alert: "chapter deleted successfully." });
+      return res.json({ result, alert: "Chapter deleted successfully." });
     } else {
-      console.log(`Document with ID ${id} not found.`);
-      return res.status(404).json({ alert: "Course not found." });
+      return res.status(404).json({ alert: "Chapter not found." });
     }
   } catch (err) {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 const courseManage = async (req, res) => {
   try {
     const { id } = req.params;
     const objectId = new mongoose.Types.ObjectId(id);
-
-    console.log(objectId, "kl");
-
-    const result = await Course.findOne({ _id: objectId }).exec(); 
-
-    console.log(result, "laaa");
-    
+    const result = await Course.findOne({ _id: objectId }).exec();
     if (!result) {
-      return res.status(404).json({ alert: 'Document not found' });
+      return res.status(404).json({ alert: "Document not found" });
     }
-
     const newData = await Course.updateOne(
       { _id: objectId },
-      { $set: { is_Block: !result.is_Block } } // Toggle the value of is_Block
+      { $set: { is_Block: !result.is_Block } }
     );
-
     res.json({
       newData,
       status: true,
-      alert: `${result.title} ${result.is_Block ? 'unblocked' : 'blocked'}`,
+      alert: `${result.title} ${result.is_Block ? "unblocked" : "blocked"}`,
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({ error: "An error occurred" });
   }
 };
 

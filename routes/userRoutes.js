@@ -38,7 +38,6 @@ userRouter.get("/findChat/:firstId/:secondId", findChats);
 userRouter.get("/getMeassage/:chatId", getMessage);
 userRouter.get("/getCommnets/:id",userController.getCommnets);
 
-
 // Post
 userRouter.post("/updateuser", Auth, userController.profileUpdate);
 userRouter.post("/enrollments", userController.enrollments);
@@ -47,7 +46,7 @@ userRouter.post("/addReview", userController.addReview);
 userRouter.post("/createChat", createChat);
 userRouter.post("/createMessage", createMessage);
 userRouter.post("/postCommnets", userController.postCommnets);
-
+userRouter.post("/createBlog",upload.single("image"), userController.createBlog);
 
 
 // Put
