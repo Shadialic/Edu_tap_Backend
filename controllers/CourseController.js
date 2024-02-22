@@ -1,7 +1,10 @@
-const Course = require("../models/courseModel");
 const CategoryDb = require("../models/categoryModel");
 const ChapterDb = require("../models/videoModel");
 const mongoose = require("mongoose");
+const User = require("../models/userModel");
+const TutorDb = require("../models/tutorModel");
+const CourseDb = require("../models/courseModel");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const addCourse = async (req, res) => {
   try {
@@ -15,7 +18,7 @@ const addCourse = async (req, res) => {
       image,
       auther,
     } = req.body;
-    const newData = new Course({
+    const newData = new CourseDb({
       title: title,
       description: description,
       level: level,
@@ -40,7 +43,7 @@ const addCourse = async (req, res) => {
 
 const getCourse = async (req, res) => {
   try {
-    const CourseData = await Course.find();
+    const CourseData = await CourseDb.find();
     const category = await CategoryDb.find();
     res.json({ CourseData, category, status: true });
   } catch (err) {
@@ -98,11 +101,11 @@ const courseManage = async (req, res) => {
   try {
     const { id } = req.params;
     const objectId = new mongoose.Types.ObjectId(id);
-    const result = await Course.findOne({ _id: objectId }).exec();
+    const result = await CourseDb.findOne({ _id: objectId }).exec();
     if (!result) {
       return res.status(404).json({ alert: "Document not found" });
     }
-    const newData = await Course.updateOne(
+    const newData = await CourseDb.updateOne(
       { _id: objectId },
       { $set: { is_Block: !result.is_Block } }
     );
@@ -116,6 +119,92 @@ const courseManage = async (req, res) => {
   }
 };
 
+const getCategory = async (req, res) => {
+  try {
+    const categories = await CategoryDb.find();
+    res.json({ categories, alert: "Successfully retrieved the data" });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+const purchaseCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userid } = req.body;
+    const user = await User.findOne({ _id: userid });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const updateResult = await User.updateOne(
+      { _id: userid },
+      { $push: { courses: { courseId: id } } }
+    );
+    res
+      .status(200)
+      .json({ success: true, message: "Course purchased successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const enrollments = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const userData = await User.find({ _id: userId });
+    const allCourseIds = new Set();
+    userData.forEach((user) => {
+      user.courses.forEach((course) => {
+        allCourseIds.add(course.courseId);
+      });
+    });
+    const coursesData = await CourseDb.find({
+      _id: { $in: [...allCourseIds] },
+    });
+    const chapter = await ChapterDb.find();
+    const tutors = await TutorDb.find({ is_Actived: "approved" });
+    res
+      .status(200)
+      .json({ courses: coursesData, chapter, tutors, status: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const checkout = async (req, res) => {
+  try {
+    const { courseid } = req.body;
+    const courseData = await CourseDb.findById(courseid);
+    if (!courseData) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+    const amountInPaise = courseData.price * 100;
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "inr",
+            product_data: {
+              name: "Course",
+            },
+            unit_amount: amountInPaise,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: "http://localhost:5173/success",
+      cancel_url: "https://localhost:5173/cancel",
+    });
+    res.json({ sessionId: session.id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   addCourse,
   getCourse,
@@ -123,4 +212,8 @@ module.exports = {
   getChapter,
   manageChapter,
   courseManage,
+  getCategory,
+  purchaseCourse,
+  enrollments,
+  checkout
 };

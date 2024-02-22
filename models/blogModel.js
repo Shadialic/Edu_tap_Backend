@@ -13,6 +13,11 @@ const blogSchema=mongoose.Schema({
     date:{
         type:String
     },
+    title:{
+        type:{
+            String
+        }
+    }
 
    
 })
