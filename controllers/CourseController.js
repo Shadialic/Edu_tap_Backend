@@ -205,6 +205,74 @@ const checkout = async (req, res) => {
   }
 };
 
+const courseRating = async (req, res) => {
+  console.log(req.body,'oeoeoeoeoeoeoeoe');
+  const {data}=req.body;
+  const { newValue, courseId,userId } = data;
+
+  try {
+    const data = await CourseDb.findOne({ _id: courseId });
+    const exist = data.ratings.find((rating) => rating.postedby.toString() === userId.toString());
+    if (exist) {
+      await CourseDb.updateOne(
+        { _id: courseId, "ratings.postedby": userId },
+        { $set: { "ratings.$.star": newValue } },
+        { new: true }
+      );
+    } else {
+      await CourseDb.findByIdAndUpdate(
+        course_id,
+        {
+          $push: {
+            ratings: {
+              star: newValue,
+              postedby: userId
+            }
+          }
+        },
+        { new: true }
+      );
+    }
+    const getallratings = await CourseDb.findById(courseId);
+    const totalRating = getallratings.ratings.length;
+    const ratingSum = getallratings.ratings.map((item) => item.star).reduce((prev, curr) => prev + curr, 0);
+    const actualRating = Math.round(ratingSum / totalRating);
+    const finalRating = await CourseDb.findByIdAndUpdate(
+      courseId,
+      { totalrating: actualRating },
+      { new: true }
+    );
+    console.log(finalRating,'finalRating');
+
+    res.json(finalRating);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const getRating = async (req, res) => {
+  try {
+    console.log(req.body, '111111111111111111');
+
+    const { courseId, userId } = req.body;
+    console.log(req.body, '2222222222222222222');
+
+    const rating = await CourseDb.findOne({ _id: courseId });
+    const yourRating = rating.ratings.find((rating) => rating.postedby.toString() === userId.toString());
+    console.log(yourRating, 'yourRating');
+    res.json({ yourRating });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
+
+
 module.exports = {
   addCourse,
   getCourse,
@@ -215,5 +283,7 @@ module.exports = {
   getCategory,
   purchaseCourse,
   enrollments,
-  checkout
+  checkout,
+  courseRating,
+  getRating
 };

@@ -39,6 +39,7 @@ userRouter.get("/findChat/:firstId/:secondId", findChats);
 userRouter.get("/getMeassage/:chatId", getMessage);
 userRouter.get("/getCommnets/:id", viewController.getCommnets);
 
+
 // Post
 userRouter.post("/updateuser", Auth, profileController.profileUpdate);
 userRouter.post("/enrollments", CourseController.enrollments);
@@ -46,10 +47,14 @@ userRouter.post("/checkout", CourseController.checkout);
 userRouter.post("/addReview", viewController.addReview);
 userRouter.post("/createChat", createChat);
 userRouter.post("/createMessage", createMessage);
-userRouter.post("/postCommnets", viewController.postCommnets);
+userRouter.post("/postCommn ets", viewController.postCommnets);
 userRouter.post("/createBlog",upload.single("image"),viewController.createBlog);
+userRouter.post("/getRating", CourseController.getRating);
+
 
 // Put
 userRouter.put("/purchaseCourse/:id", Auth, CourseController.purchaseCourse);
+userRouter.put("/courseRating", CourseController.courseRating);
+
 
 module.exports = userRouter;

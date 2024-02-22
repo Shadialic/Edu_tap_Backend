@@ -35,6 +35,17 @@ const CourseSchema=new mongoose.Schema({
     is_Active:{
         type:String,
         default:false
+    },
+    ratings:[{
+        star:Number,
+        postedby:{
+            type:mongoose.Schema.Types.ObjectId,ref:"Course"
+        },
+
+    }],
+    totelrating:{
+        type:String,
+        default:0
     }
  
 })
