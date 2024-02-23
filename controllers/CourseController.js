@@ -206,13 +206,15 @@ const checkout = async (req, res) => {
 };
 
 const courseRating = async (req, res) => {
-  console.log(req.body,'oeoeoeoeoeoeoeoe');
-  const {data}=req.body;
-  const { newValue, courseId,userId } = data;
+  console.log(req.body, "oeoeoeoeoeoeoeoe");
+  const { data } = req.body;
+  const { newValue, courseId, userId } = data;
 
   try {
     const data = await CourseDb.findOne({ _id: courseId });
-    const exist = data.ratings.find((rating) => rating.postedby.toString() === userId.toString());
+    const exist = data.ratings.find(
+      (rating) => rating.postedby.toString() === userId.toString()
+    );
     if (exist) {
       await CourseDb.updateOne(
         { _id: courseId, "ratings.postedby": userId },
@@ -226,26 +228,27 @@ const courseRating = async (req, res) => {
           $push: {
             ratings: {
               star: newValue,
-              postedby: userId
-            }
-          }
+              postedby: userId,
+            },
+          },
         },
         { new: true }
       );
     }
     const getallratings = await CourseDb.findById(courseId);
     const totalRating = getallratings.ratings.length;
-    const ratingSum = getallratings.ratings.map((item) => item.star).reduce((prev, curr) => prev + curr, 0);
-    const actualRating = Math.round(ratingSum / totalRating);
-    const finalRating = await CourseDb.findByIdAndUpdate(
-      courseId,
-      { totalrating: actualRating },
+    const ratingSum = getallratings.ratings
+      .map((item) => item.star)
+      .reduce((prev, curr) => prev + curr, 0);
+    const actualRating = ratingSum / totalRating;
+    console.log(actualRating,'actualRating');
+    const finalRating = await CourseDb.findByIdAndUpdate({_id:courseId},
+      { totelrating: actualRating },
       { new: true }
     );
-    console.log(finalRating,'finalRating');
+    console.log(finalRating, "finalRating");
 
     res.json(finalRating);
-
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal server error" });
@@ -254,25 +257,20 @@ const courseRating = async (req, res) => {
 
 const getRating = async (req, res) => {
   try {
-    console.log(req.body, '111111111111111111');
+    console.log(req.params, "111111111111111111");
 
-    const { courseId, userId } = req.body;
-    console.log(req.body, '2222222222222222222');
+    const { id } = req.params; 
+    const courseId = String(id);
+    console.log(id, "111111111111111111");
 
-    const rating = await CourseDb.findOne({ _id: courseId });
-    const yourRating = rating.ratings.find((rating) => rating.postedby.toString() === userId.toString());
-    console.log(yourRating, 'yourRating');
-    res.json({ yourRating });
-
+    const rating = await CourseDb.findOne({ _id:courseId }); 
+    console.log(rating, "yourRating");
+    res.json({ rating });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
-}
-
-
-
-
+};
 module.exports = {
   addCourse,
   getCourse,
@@ -285,5 +283,5 @@ module.exports = {
   enrollments,
   checkout,
   courseRating,
-  getRating
+  getRating,
 };

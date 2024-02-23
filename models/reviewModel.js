@@ -17,8 +17,11 @@ const reviewSchema = new Schema({
     courseId:{
         type: String,
         required: true
-    }
-});
+    },
+},
+{
+    timestamps: true
+  });
 
 const Review = mongoose.model("Review", reviewSchema);
 module.exports = Review;

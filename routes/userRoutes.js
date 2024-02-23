@@ -38,6 +38,7 @@ userRouter.get("/findUserChats/:userId", findUserChats);
 userRouter.get("/findChat/:firstId/:secondId", findChats);
 userRouter.get("/getMeassage/:chatId", getMessage);
 userRouter.get("/getCommnets/:id", viewController.getCommnets);
+userRouter.get("/getRating/:id", CourseController.getRating);
 
 
 // Post
@@ -49,7 +50,6 @@ userRouter.post("/createChat", createChat);
 userRouter.post("/createMessage", createMessage);
 userRouter.post("/postCommn ets", viewController.postCommnets);
 userRouter.post("/createBlog",upload.single("image"),viewController.createBlog);
-userRouter.post("/getRating", CourseController.getRating);
 
 
 // Put
