@@ -12,6 +12,7 @@ const {
   createChat,
   findUserChats,
   findChats,
+  checkConnection
 } = require("../controllers/chatController");
 const {
   createMessage,
@@ -48,7 +49,9 @@ userRouter.post("/checkout", CourseController.checkout);
 userRouter.post("/addReview", viewController.addReview);
 userRouter.post("/createChat", createChat);
 userRouter.post("/createMessage", createMessage);
-userRouter.post("/postCommn ets", viewController.postCommnets);
+userRouter.post("/postCommnets", viewController.postCommnets);
+userRouter.post("/checkConnection",checkConnection);
+
 userRouter.post("/createBlog",upload.single("image"),viewController.createBlog);
 
 

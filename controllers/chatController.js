@@ -6,6 +6,7 @@ const createChat = async (req, res) => {
     const chat = await chatDb.findOne({
       members: { $all: [firstId, secondId] },
     });
+    console.log();
     if (chat) {
       return res.status(200).json(chat);
     }
@@ -70,6 +71,31 @@ const findTutorChats = async (req, res) => {
     res.status(500).json("");
   }
 };
+const techerStudents = async (req, res) => {
+  const {id} = req.params;
+  console.log(id, "llllllllllllllll");
+  try {
+    const chats = await chatDb
+      .find({
+        members: { $in: [id] },
+      })
+      .populate({
+        path: "members",
+        select: "userName email image",
+        match: { _id: { $ne: id } },
+        model: "User",
+      });
+    console.log(chats, "chatschats");
+    res.status(200).json({
+      chats: chats,
+      success: true,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("");
+  }
+};
+
 
 const findChats = async (req, res) => {
   const { firstId, secondId } = req.params;
@@ -86,10 +112,29 @@ const findChats = async (req, res) => {
     res.status(500).json("");
   }
 };
+const checkConnection=async(req,res)=>{
+  try{
+    const { firstId, secondId } = req.body;
+    const chat = await chatDb.findOne({
+      members: { $all: [firstId, secondId] },
+    });
+    console.log(chat,'===============');
+    if(chat){
+
+      res.json({status:true,chat})
+    }
+
+  }catch(err){
+
+    console.log(err);
+  }
+}
 
 module.exports = {
   createChat,
   findUserChats,
   findChats,
   findTutorChats,
+  techerStudents,
+  checkConnection
 };
