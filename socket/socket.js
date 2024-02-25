@@ -19,6 +19,30 @@ const getRecipientSocketId = (recipientId) => {
   const socket = onlineUsers.find((user) => user.userId === recipientId);
   return socket.socketId;
 };
+const getGroupSocketId = (recipientIdsArray) => {
+  const socketIds = [];
+  for (const recipientIds of recipientIdsArray) {
+    if (Array.isArray(recipientIds)) {
+      for (const recipientId of recipientIds) {
+        const socket = onlineUsers.find((user) => user.userId.toString() === recipientId.toString());
+        if (socket) {
+          console.log(socket, 'socketsocket');
+          socketIds.push(socket.socketId);
+        }
+      }
+    } else {
+      const socket = onlineUsers.find((user) => user.userId.toString() === recipientIds.toString());
+      console.log(socket, '000000');
+
+      if (socket) {
+        socketIds.push(socket.socketId);
+      }
+    }
+  }
+  return socketIds;
+};
+
+
 io.on("connection", (socket) => {
   socket.on("addNewUser", (newUserId) => {
     if (!onlineUsers.some((user) => user.userId === newUserId)) {
@@ -33,4 +57,4 @@ io.on("connection", (socket) => {
   });
 });
 
-module.exports = { app, server, getRecipientSocketId, io };
+module.exports = { app, server, getRecipientSocketId,getGroupSocketId, io };

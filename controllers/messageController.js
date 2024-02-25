@@ -1,18 +1,36 @@
 const messageDb = require("../models/messageModel");
-const { getRecipientSocketId, io } = require("../socket/socket");
+const { getRecipientSocketId,getGroupSocketId, io } = require("../socket/socket");
+const GroupChatDb=require('../models/groupChatModel');
 
 const createMessage = async (req, res) => {
   try {
     const { data } = req.body;
-    const { chatId, senderId, text, recipientId } = data;
+    console.log(data,'-=');
+    const { chatId, senderId, text, recipientId,groupChat,isGroupChat} = data;
     const message = new messageDb({
       chatId,
       senderId,
       text,
     });
     const saveMeassage = await message.save();
-    const recipientSocketId = getRecipientSocketId(recipientId);
-    io.to(recipientSocketId).emit("newMessage", saveMeassage);
+    if(isGroupChat){
+      const data = await GroupChatDb.find({_id: groupChat});
+      console.log(data,'-------data');
+
+      const membersAndCreatorsArray = data.flatMap(item => [item.members.map(member => member.toString()), item.creator.toString()]);
+
+
+      
+      console.log(membersAndCreatorsArray,'-----------------');
+   
+
+      const recipientSocketId = getGroupSocketId(membersAndCreatorsArray);
+      io.to(recipientSocketId).emit("newMessage", saveMeassage);
+    }else{
+      console.log('--ssssssssssssssss---------------');
+      const recipientSocketId = getRecipientSocketId(recipientId);
+      io.to(recipientSocketId).emit("newMessage", saveMeassage);
+    }
     res.status(200).json({
       saveMeassage,
       success: true,
