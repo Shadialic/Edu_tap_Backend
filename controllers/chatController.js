@@ -1,5 +1,6 @@
 const chatDb = require("../models/chatModel");
-
+const GroupChatDb=require('../models/groupChatModel');
+const { uploadToCloudinary } = require("../utils/cloudinary");
 const createChat = async (req, res) => {
   try {
     const { firstId, secondId } = req.body;
@@ -38,8 +39,11 @@ const findUserChats = async (req, res) => {
         match: { _id: { $ne: userId } },
         model: "tutor",
       });
+      const groupchat=await GroupChatDb.find({members:{$in:[userId]}})
+      console.log(groupchat,'groupchat');
     res.status(200).json({
       chats: chats,
+      groupchat,
       success: true,
     });
   } catch (err) {
@@ -62,8 +66,11 @@ const findTutorChats = async (req, res) => {
         model: "User",
       });
     console.log(chats, "chatschats");
+    const groupchat=await GroupChatDb.find({creator:tutorId})
+    console.log(groupchat,'groupchat');
     res.status(200).json({
       chats: chats,
+      groupchat,
       success: true,
     });
   } catch (err) {
@@ -130,11 +137,44 @@ const checkConnection=async(req,res)=>{
   }
 }
 
+const createGroupChat = async (req, res) => {
+  try {
+    console.log(req.body, '================================');
+    const { groupName, senderId,  receiverIds } = req.body;
+    const img = req.file.path;
+    console.log(img,'img');
+    const data = await uploadToCloudinary(img, "chat");
+    console.log(groupName, senderId, '=groupName,senderId,groupName========', receiverIds);
+
+    console.log(data, 'data');
+    const exist = await GroupChatDb.find({ groupName: groupName });
+    console.log(exist, 'exist');
+    if (exist.length > 0) {
+      return res.json({ alert: 'group name already exist' });
+    }
+    const createGroup = await GroupChatDb({
+      groupName: groupName,
+      creator: senderId,
+      image:data.url,
+      members: [... receiverIds], 
+    });
+    console.log(createGroup, 'createGroup');
+    const saveData = await createGroup.save();
+    console.log(saveData, 'saveData');
+    res.json({ alert: 'Group created successfully', data: saveData });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
 module.exports = {
   createChat,
   findUserChats,
   findChats,
   findTutorChats,
   techerStudents,
-  checkConnection
+  checkConnection,
+  createGroupChat
 };

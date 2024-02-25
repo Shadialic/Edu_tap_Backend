@@ -4,7 +4,7 @@ const vendorController=require('../controllers/tutorController');
 const CourseController=require('../controllers/courseController')
 // const {uploadImage} = require('../config/cloudinary');
 const upload=require('../middleware/multer')
-const {findTutorChats,techerStudents}=require('../controllers/chatController')
+const {findTutorChats,techerStudents,createGroupChat}=require('../controllers/chatController')
 
 vendorRouter.post('/vendor/signup',upload.single("image"),vendorController.addTutor);
 vendorRouter.post('/vendor/sendotp',vendorController.sendOTP);
@@ -24,6 +24,7 @@ vendorRouter.put('/vendor/manageChapter/:id',CourseController.manageChapter);
 
 vendorRouter.get('/teacherUsers/:id',techerStudents);
 
+vendorRouter.post('/createGroupChat', upload.single("image"), createGroupChat);
 
 vendorRouter.get("/findTutorChats/:tutorId", findTutorChats);
 
