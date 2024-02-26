@@ -40,6 +40,8 @@ userRouter.get("/findChat/:firstId/:secondId", findChats);
 userRouter.get("/getMeassage/:chatId", getMessage);
 userRouter.get("/getCommnets/:id", viewController.getCommnets);
 userRouter.get("/getRating/:id", CourseController.getRating);
+userRouter.get("/getBlogs", viewController.getBlog);
+
 
 
 // Post

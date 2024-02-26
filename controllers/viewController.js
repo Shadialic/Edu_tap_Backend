@@ -64,10 +64,10 @@ const addReview = async (req, res) => {
   const createBlog = async (req, res) => {
     const {title, author, description, date } = req.body;
     try {
-      console.log(req.body,'req.body');
+      // console.log(req.body,'req.body');
       const img = req.file.path;
       const data = await uploadToCloudinary(img, "blog");
-      console.log(data,'data');
+       console.log(data,'data');
   
       const user = await User.findOne({_id:author });
       console.log(user,'user');
@@ -79,8 +79,11 @@ const addReview = async (req, res) => {
           description,
           date,
           image: data.url,
+          authorProfile:user,
+          authorName:user.userName
         });
         const blog = await blodData.save();
+        console.log(blog,'---==--==--===-===-');
         res
           .status(200)
           .json({ status: true, alert: "successfully created", blog, user });
@@ -90,6 +93,16 @@ const addReview = async (req, res) => {
       res.status(500).json({ error: "Internal server error" });
     }
   };
+  const getBlog=async(req,res)=>{
+    try{
+      const blogs=await blogDb.find();
+      // console.log(blogs,'blogsblogs');
+      res.json({blogs})
+
+    }catch(err){
+      console.log(err);
+    }
+  }
 
   module.exports={
     addReview,
@@ -97,4 +110,5 @@ const addReview = async (req, res) => {
   postCommnets,
   getCommnets,
   createBlog,
+  getBlog
   }

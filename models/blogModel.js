@@ -14,12 +14,15 @@ const blogSchema=mongoose.Schema({
         type:String
     },
     title:{
-        type:{
-            String
-        }
+        type:String
+    },
+    authorName:{
+        type:String
+    },
+    authorProfile:{
+        type:String
     }
 
-   
 })
 const Blog=mongoose.model('Blog',blogSchema)
 module.exports =Blog
