@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
 const CourseDb = require("../models/courseModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
+const PaymentDb=require('../models/paymentModle')
 const addCourse = async (req, res) => {
   try {
     const {
@@ -198,6 +198,15 @@ const checkout = async (req, res) => {
       success_url: "http://localhost:5173/success",
       cancel_url: "https://localhost:5173/cancel",
     });
+  // const payment=new PaymentDb({
+  //   PaymentId:session.id,
+  //   date:new Date(),
+  //   Amount:session.amount_total,
+    // courseName,
+    // studentId,
+    // tutorId,
+
+  // })
     res.json({ sessionId: session.id });
   } catch (err) {
     console.error(err);
