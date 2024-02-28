@@ -4,8 +4,7 @@ const mongoose = require("mongoose");
 const User = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
 const CourseDb = require("../models/courseModel");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const PaymentDb=require('../models/paymentModle')
+const PaymentDb = require("../models/paymentModle");
 const addCourse = async (req, res) => {
   try {
     const {
@@ -175,42 +174,110 @@ const enrollments = async (req, res) => {
 const checkout = async (req, res) => {
   try {
     const { courseid } = req.body;
+    const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
     const courseData = await CourseDb.findById(courseid);
     if (!courseData) {
       return res.status(404).json({ error: "Course not found" });
     }
     const amountInPaise = courseData.price * 100;
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "inr",
-            product_data: {
-              name: "Course",
-            },
-            unit_amount: amountInPaise,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: "http://localhost:5173/success",
-      cancel_url: "https://localhost:5173/cancel",
+    // const session = await stripe.checkout.sessions.create({
+    //   payment_method_types: ["card"],
+    //   line_items: [
+    //     {
+    //       price_data: {
+    //         currency: "inr",
+    //         product_data: {
+    //           name: "Course",
+    //         },
+    //         unit_amount: amountInPaise,
+    //       },
+    //       quantity: 1,
+    //     },
+    //   ],
+    //   mode: "payment",
+    //   success_url: "http://localhost:5173/success",
+    //   cancel_url: "https://localhost:5173/cancel",
+    // });
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInPaise,
+      currency: "inr",
+      automatic_payment_methods: {
+        enabled: true,
+      },
     });
-  // const payment=new PaymentDb({
-  //   PaymentId:session.id,
-  //   date:new Date(),
-  //   Amount:session.amount_total,
+    console.log(paymentIntent, "paymentIntent");
+    return res.status(200).json({
+      success: true,
+      message: "client id passed to client",
+      clientSecret: paymentIntent.client_secret,
+      amountInPaise: paymentIntent.amount,
+    });
+
+    // const payment=new PaymentDb({
+    //   PaymentId:session.id,
+    //   date:new Date(),
+    //   Amount:session.amount_total,
     // courseName,
     // studentId,
     // tutorId,
 
-  // })
-    res.json({ sessionId: session.id });
+    // })
+    // res.json({ sessionId: session.id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+const successPayment = async (req, res) => {
+  try {
+    console.log(req.body, "oeooeoeoeooe");
+    const { data } = req.body;
+    const { id, amount, date, userId, tutorId, courseId } = data;
+
+    const user = await User.findOne({ email: userId });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const courseExists = user.courses.some(
+      (course) => course.courseId === courseId
+    );
+    console.log(courseExists, "courseExistscourseExists");
+    if (courseExists) {
+      console.log(courseExists);
+      return res
+        .status(201)
+        .json({ message: "This course has already been purchased" });
+    } else {
+      const paymentData = new PaymentDb({
+        PaymentId: id,
+        studentId: userId,
+        tutorId: tutorId,
+        courseName: courseId,
+        date: date,
+        Amount: amount,
+      });
+
+      const saveData = await paymentData.save();
+
+      await User.updateOne(
+        { email: userId },
+        { $push: { courses: { courseId: courseId } } }
+      );
+
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message: "Course purchase successful",
+          saveData,
+        });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -232,7 +299,7 @@ const courseRating = async (req, res) => {
       );
     } else {
       await CourseDb.findByIdAndUpdate(
-        course_id,
+        courseId,
         {
           $push: {
             ratings: {
@@ -250,8 +317,9 @@ const courseRating = async (req, res) => {
       .map((item) => item.star)
       .reduce((prev, curr) => prev + curr, 0);
     const actualRating = ratingSum / totalRating;
-    console.log(actualRating,'actualRating');
-    const finalRating = await CourseDb.findByIdAndUpdate({_id:courseId},
+    console.log(actualRating, "actualRating");
+    const finalRating = await CourseDb.findByIdAndUpdate(
+      { _id: courseId },
       { totelrating: actualRating },
       { new: true }
     );
@@ -268,11 +336,11 @@ const getRating = async (req, res) => {
   try {
     console.log(req.params, "111111111111111111");
 
-    const { id } = req.params; 
+    const { id } = req.params;
     const courseId = String(id);
     console.log(id, "111111111111111111");
 
-    const rating = await CourseDb.findOne({ _id:courseId }); 
+    const rating = await CourseDb.findOne({ _id: courseId });
     console.log(rating, "yourRating");
     res.json({ rating });
   } catch (err) {
@@ -293,4 +361,5 @@ module.exports = {
   checkout,
   courseRating,
   getRating,
+  successPayment,
 };

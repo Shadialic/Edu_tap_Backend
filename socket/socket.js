@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", 
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT"],
     credentials: true,
   },
@@ -24,16 +24,19 @@ const getGroupSocketId = (recipientIdsArray) => {
   for (const recipientIds of recipientIdsArray) {
     if (Array.isArray(recipientIds)) {
       for (const recipientId of recipientIds) {
-        const socket = onlineUsers.find((user) => user.userId.toString() === recipientId.toString());
+        const socket = onlineUsers.find(
+          (user) => user.userId.toString() === recipientId.toString()
+        );
         if (socket) {
-          console.log(socket, 'socketsocket');
+          console.log(socket, "socketsocket");
           socketIds.push(socket.socketId);
         }
       }
     } else {
-      const socket = onlineUsers.find((user) => user.userId.toString() === recipientIds.toString());
-      console.log(socket, '000000');
-
+      const socket = onlineUsers.find(
+        (user) => user.userId.toString() === recipientIds.toString()
+      );
+      console.log(socket, "000000");
       if (socket) {
         socketIds.push(socket.socketId);
       }
@@ -41,7 +44,18 @@ const getGroupSocketId = (recipientIdsArray) => {
   }
   return socketIds;
 };
-
+const getComments = (userIds) => {
+  const comments = [];
+  userIds.forEach((userId) => {
+    const socket = onlineUsers.find((user) => user.userId === userId);
+    if (socket) {
+      comments.push({ userId: userId, socketId: socket.socketId });
+    } else {
+      comments.push({ userId: userId, socketId: null });
+    }
+  });
+  return comments;
+};
 
 io.on("connection", (socket) => {
   socket.on("addNewUser", (newUserId) => {
@@ -57,4 +71,11 @@ io.on("connection", (socket) => {
   });
 });
 
-module.exports = { app, server, getRecipientSocketId,getGroupSocketId, io };
+module.exports = {
+  app,
+  server,
+  getRecipientSocketId,
+  getGroupSocketId,
+  getComments,
+  io,
+};

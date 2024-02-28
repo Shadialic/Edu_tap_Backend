@@ -19,15 +19,9 @@ const createMessage = async (req, res) => {
 
       const membersAndCreatorsArray = data.flatMap(item => [item.members.map(member => member.toString()), item.creator.toString()]);
 
-
-      
-      console.log(membersAndCreatorsArray,'-----------------');
-   
-
       const recipientSocketId = getGroupSocketId(membersAndCreatorsArray);
       io.to(recipientSocketId).emit("newMessage", saveMeassage);
     }else{
-      console.log('--ssssssssssssssss---------------');
       const recipientSocketId = getRecipientSocketId(recipientId);
       io.to(recipientSocketId).emit("newMessage", saveMeassage);
     }

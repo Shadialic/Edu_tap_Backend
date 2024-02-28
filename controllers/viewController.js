@@ -4,6 +4,7 @@ const ReviewDb = require("../models/reviewModel");
 const chatDb = require("../models/chatModel");
 const blogDb = require("../models/blogModel");
 const CommnetDb = require("../models/commentModel");
+const { getComments } = require("../socket/socket");
 
 
 const addReview = async (req, res) => {
@@ -45,6 +46,11 @@ const addReview = async (req, res) => {
         Image: Image,
       });
       const saveComment = await comments.save();
+      const users = await User.find({}, '_id'); 
+      const userIds = users.map(user => user._id);
+      console.log(userIds,'userIds');
+      const recipientSocketId = getComments(userIds);
+      io.to(recipientSocketId).emit("newComment", saveComment);
       res.json({ status: true, saveComment });
     } catch (err) {
       res.status(500).json({ error: "Internal server error" });

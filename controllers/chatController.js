@@ -16,7 +16,6 @@ const createChat = async (req, res) => {
       members: [firstId, secondId],
       active:true
     });
-    console.log(newChat,'llllllllllllllllllllll');
     const response = await newChat.save();
     return res.json({ response });
   } catch (err) {
@@ -53,7 +52,6 @@ const findUserChats = async (req, res) => {
 };
 const findTutorChats = async (req, res) => {
   const tutorId = req.params.tutorId;
-  console.log(tutorId, "llllllllllllllll");
   try {
     const chats = await chatDb
       .find({
@@ -80,7 +78,6 @@ const findTutorChats = async (req, res) => {
 };
 const techerStudents = async (req, res) => {
   const {id} = req.params;
-  console.log(id, "llllllllllllllll");
   try {
     const chats = await chatDb
       .find({
@@ -125,7 +122,6 @@ const checkConnection=async(req,res)=>{
     const chat = await chatDb.findOne({
       members: { $all: [firstId, secondId] },
     });
-    console.log(chat,'===============');
     if(chat){
 
       res.json({status:true,chat})
@@ -139,16 +135,11 @@ const checkConnection=async(req,res)=>{
 
 const createGroupChat = async (req, res) => {
   try {
-    console.log(req.body, '================================');
     const { groupName, senderId,  receiverIds } = req.body;
     const img = req.file.path;
-    console.log(img,'img');
     const data = await uploadToCloudinary(img, "chat");
-    console.log(groupName, senderId, '=groupName,senderId,groupName========', receiverIds);
 
-    console.log(data, 'data');
     const exist = await GroupChatDb.find({ groupName: groupName });
-    console.log(exist, 'exist');
     if (exist.length > 0) {
       return res.json({ alert: 'group name already exist' });
     }
@@ -158,9 +149,7 @@ const createGroupChat = async (req, res) => {
       image:data.url,
       members: [... receiverIds], 
     });
-    console.log(createGroup, 'createGroup');
     const saveData = await createGroup.save();
-    console.log(saveData, 'saveData');
     res.json({ alert: 'Group created successfully', data: saveData });
   } catch (err) {
     console.log(err);
