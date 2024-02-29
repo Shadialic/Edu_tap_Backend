@@ -51,7 +51,7 @@ userRouter.post("/checkout", CourseController.checkout);
 userRouter.post("/addReview", viewController.addReview);
 userRouter.post("/createChat", createChat);
 userRouter.post("/createMessage", createMessage);
-userRouter.post("/postCommnets", viewController.postCommnets);
+userRouter.post("/postCommnets",viewController.postCommnets);
 userRouter.post("/checkConnection",checkConnection);
 userRouter.post("/success",CourseController.successPayment);
 

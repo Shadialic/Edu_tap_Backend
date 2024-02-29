@@ -212,7 +212,7 @@ const checkout = async (req, res) => {
       success: true,
       message: "client id passed to client",
       clientSecret: paymentIntent.client_secret,
-      amountInPaise: paymentIntent.amount,
+      amountInPaise: amountInPaise,
     });
 
     // const payment=new PaymentDb({

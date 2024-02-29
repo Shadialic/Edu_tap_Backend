@@ -4,7 +4,8 @@ const ReviewDb = require("../models/reviewModel");
 const chatDb = require("../models/chatModel");
 const blogDb = require("../models/blogModel");
 const CommnetDb = require("../models/commentModel");
-const { getComments } = require("../socket/socket");
+const { io } = require("../socket/socket");
+// const { getComments } = require("../socket/socket");
 
 
 const addReview = async (req, res) => {
@@ -36,23 +37,24 @@ const addReview = async (req, res) => {
   
   const postCommnets = async (req, res) => {
     const { data } = req.body;
-    const { comment, auther, Date, chapterId, Image } = data;
+  
+  
+  
+    console.log(data, 'data===========');
+    const { comment, author, Date, chapterId, Image } = data; 
     try {
       const comments = new CommnetDb({
         comment: comment,
-        auther: auther,
+        author: author,
         Date: Date,
         chapterId: chapterId,
-        Image: Image,
+        // Image: image.url,
       });
       const saveComment = await comments.save();
-      const users = await User.find({}, '_id'); 
-      const userIds = users.map(user => user._id);
-      console.log(userIds,'userIds');
-      const recipientSocketId = getComments(userIds);
-      io.to(recipientSocketId).emit("newComment", saveComment);
+   io.emit("new-comment", { comment: saveComment }); // Access io through req.app
       res.json({ status: true, saveComment });
     } catch (err) {
+      console.error(err);
       res.status(500).json({ error: "Internal server error" });
     }
   };
@@ -60,7 +62,9 @@ const addReview = async (req, res) => {
   const getCommnets = async (req, res) => {
     const { id } = req.params;
     try {
+      console.log(id,'fsdfsdfsdfgsdsd');
       const comments = await CommnetDb.find({ chapterId: id });
+      console.log(comments,'commentscomments');
       res.json({ comments, status: true });
     } catch (err) {
       res.status(500).json({ error: "Internal server error" });

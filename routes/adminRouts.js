@@ -15,6 +15,10 @@ adminRouter.put('/manageCourse',adminController.manageCourse)
 adminRouter.get('/getCourse',adminController.getCourse)
 adminRouter.put('/blockCourse',adminController.blockCourse)
 adminRouter.put('/managecategory/:id',adminController.managecategory)
+adminRouter.post('/postOffer',adminController.postOffer)
+adminRouter.get('/loadOffer',adminController.loadOffer)
+
+
 
 
 

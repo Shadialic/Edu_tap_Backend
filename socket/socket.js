@@ -44,18 +44,18 @@ const getGroupSocketId = (recipientIdsArray) => {
   }
   return socketIds;
 };
-const getComments = (userIds) => {
-  const comments = [];
-  userIds.forEach((userId) => {
-    const socket = onlineUsers.find((user) => user.userId === userId);
-    if (socket) {
-      comments.push({ userId: userId, socketId: socket.socketId });
-    } else {
-      comments.push({ userId: userId, socketId: null });
-    }
-  });
-  return comments;
-};
+// const getComments = (userIds) => {
+//   const comments = [];
+//   userIds.forEach((userId) => {
+//     const socket = onlineUsers.find((user) => user.userId === userId);
+//     if (socket) {
+//       comments.push({ userId: userId, socketId: socket.socketId });
+//     } else {
+//       comments.push({ userId: userId, socketId: null });
+//     }
+//   });
+//   return comments;
+// };
 
 io.on("connection", (socket) => {
   socket.on("addNewUser", (newUserId) => {
@@ -76,6 +76,6 @@ module.exports = {
   server,
   getRecipientSocketId,
   getGroupSocketId,
-  getComments,
+  // getComments,
   io,
 };

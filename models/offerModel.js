@@ -1,20 +1,10 @@
 const mongoose = require('mongoose');
 
 const offerSchema = mongoose.Schema({ 
-    title: {
-        type: String,
-        required: true,
-    },
-    description: {
-        type: String,
-        required: true,
-    },
     category: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
-        required: true,
+        type: String,
     },
-    discountPercentage: {
+   Percentage: {
         type: Number,
         required: true,
     },
@@ -22,7 +12,7 @@ const offerSchema = mongoose.Schema({
         type: Date,
         required: true,
     },
-    endDate: {
+    ExpireDate: {
         type: Date,
         required: true,
     },
