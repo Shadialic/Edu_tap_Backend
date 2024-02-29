@@ -2,7 +2,8 @@ const UserDb = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
 const Category = require("../models/categoryModel");
 const CourseDb = require("../models/courseModel");
-const OfferDb=require('../models/offerModel')
+const OfferDb = require("../models/offerModel");
+const PaymentDb = require("../models/paymentModle");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -323,10 +324,7 @@ const blockCourse = async (req, res) => {
   }
 };
 
-
 const postOffer = async (req, res) => {
-  console.log(req.body, '--2-2-2-2-2-2');
-  
   try {
     const { category, percentage, startDate, expireDate } = req.body;
 
@@ -335,10 +333,10 @@ const postOffer = async (req, res) => {
       Percentage: percentage,
       startDate: startDate,
       ExpireDate: expireDate,
-      status: true
+      status: true,
     });
     const savedOffer = await offer.save();
-    console.log(offer, 'offeroffer', savedOffer);
+    console.log(offer, "offeroffer", savedOffer);
     res.json({ message: "Offer successfully added", data: savedOffer });
   } catch (error) {
     console.error(error);
@@ -346,18 +344,25 @@ const postOffer = async (req, res) => {
   }
 };
 
-module.exports = postOffer;
-
-const loadOffer=async(req,res)=>{
-  try{
-    const categories=await OfferDb.find()
-    if(categories){
-      res.json({categories,status:true})
+const loadOffer = async (req, res) => {
+  try {
+    const categories = await OfferDb.find();
+    if (categories) {
+      res.json({ categories, status: true });
     }
-  }catch(err){
+  } catch (err) {
     res.status(400).json({ alert: "intrnal server error" });
   }
-}
+};
+const fetchPaymentReport = async (req, res) => {
+  try {
+    const data = await PaymentDb.find();
+    res.json({ data });
+  } catch (err) {
+    res.status(400).json({ alert: "intrnal server error" });
+  }
+};
+
 module.exports = {
   loadloagin,
   loaduser,
@@ -373,5 +378,6 @@ module.exports = {
   blockCourse,
   managecategory,
   postOffer,
-  loadOffer
+  loadOffer,
+  fetchPaymentReport,
 };

@@ -23,6 +23,8 @@ vendorRouter.put('/vendor/blockunblcoCourse/:id',CourseController.courseManage);
 vendorRouter.put('/vendor/manageChapter/:id',CourseController.manageChapter);
 
 vendorRouter.get('/teacherUsers/:id',techerStudents);
+vendorRouter.get('/fetchPaymentDetailes/:id',CourseController.fetchPaymentDetailes);
+
 
 vendorRouter.post('/createGroupChat', upload.single("image"), createGroupChat);
 

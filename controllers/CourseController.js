@@ -348,6 +348,21 @@ const getRating = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+const fetchPaymentDetailes=async(req,res)=>{
+  try{
+    const {id}=req.params;
+    console.log(id,'sssssssssssssssss');
+    const data=await PaymentDb.find({tutorId:id})
+    res.json({data})
+
+
+  }catch(err){
+    console.log(err);
+    res.status(500).json({ error: "Internal server error" });
+
+  }
+}
 module.exports = {
   addCourse,
   getCourse,
@@ -362,4 +377,5 @@ module.exports = {
   courseRating,
   getRating,
   successPayment,
+  fetchPaymentDetailes
 };
