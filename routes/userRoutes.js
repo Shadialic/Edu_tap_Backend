@@ -54,6 +54,8 @@ userRouter.post("/createMessage", createMessage);
 userRouter.post("/postCommnets",viewController.postCommnets);
 userRouter.post("/checkConnection",checkConnection);
 userRouter.post("/success",CourseController.successPayment);
+userRouter.post("/certificate",CourseController.certificateAdded);
+
 
 
 userRouter.post("/createBlog",upload.single("image"),viewController.createBlog);

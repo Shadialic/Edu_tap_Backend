@@ -56,6 +56,12 @@ const userSchema = mongoose.Schema({
     courseId: String,
   }
 ],
+Achivements: [ 
+  {
+    courseName: String,
+    courseImage:String,
+  }
+],
 
 
 });

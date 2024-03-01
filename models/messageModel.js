@@ -4,7 +4,9 @@ const messageSchema = mongoose.Schema(
   {
     chatId: String,
     senderId: String,
-    text: String
+    text: String,
+    userImage:String,
+    userName:String,
   },
   {
     timestamps: true

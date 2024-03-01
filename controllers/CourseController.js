@@ -267,13 +267,11 @@ const successPayment = async (req, res) => {
         { $push: { courses: { courseId: courseId } } }
       );
 
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "Course purchase successful",
-          saveData,
-        });
+      return res.status(200).json({
+        success: true,
+        message: "Course purchase successful",
+        saveData,
+      });
     }
   } catch (err) {
     console.log(err);
@@ -349,20 +347,49 @@ const getRating = async (req, res) => {
   }
 };
 
-const fetchPaymentDetailes=async(req,res)=>{
-  try{
-    const {id}=req.params;
-    console.log(id,'sssssssssssssssss');
-    const data=await PaymentDb.find({tutorId:id})
-    res.json({data})
-
-
-  }catch(err){
+const fetchPaymentDetailes = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id, "sssssssssssssssss");
+    const data = await PaymentDb.find({ tutorId: id });
+    res.json({ data });
+  } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal server error" });
-
   }
+};
+const certificateAdded = async (req, res) => {
+  try {
+    const { data } = req.body;
+    const { courseId, userId } = data;
+    const courses = await CourseDb.findOne({ _id: courseId });
+
+    const courseName = courses.title;
+const courseImage = courses.image;
+
+const exist = await User.find(
+  { _id: userId, "Achivements.courseName": courseName }
+);
+
+if (exist.length === 0) {
+  const updateUser = await User.updateOne(
+    { _id: userId },
+    {
+      $push: {
+        Achivements: {
+          courseName: courseName,
+          courseImage: courseImage
+        }
+      }
+    }
+  );
 }
+
+    console.log(req.body, "===========");
+  } catch (err) {
+    console.log(err);
+  }
+};
 module.exports = {
   addCourse,
   getCourse,
@@ -377,5 +404,6 @@ module.exports = {
   courseRating,
   getRating,
   successPayment,
-  fetchPaymentDetailes
+  fetchPaymentDetailes,
+  certificateAdded,
 };

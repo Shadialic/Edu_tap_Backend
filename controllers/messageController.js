@@ -6,11 +6,14 @@ const createMessage = async (req, res) => {
   try {
     const { data } = req.body;
     console.log(data,'-=');
-    const { chatId, senderId, text, recipientId,groupChat,isGroupChat} = data;
+    const { chatId, senderId, text, recipientId,groupChat,isGroupChat,userName,userImage} = data;
     const message = new messageDb({
       chatId,
       senderId,
       text,
+      userName,
+      userImage,
+      isGroupChat
     });
     const saveMeassage = await message.save();
     if(isGroupChat){
