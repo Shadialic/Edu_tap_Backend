@@ -362,6 +362,35 @@ const fetchPaymentReport = async (req, res) => {
     res.status(400).json({ alert: "intrnal server error" });
   }
 };
+const getDashboardData = async (req, res) => {
+  try {
+    const userData = await UserDb.find();
+    const tutorData = await TutorDb.find();
+    const courseDb = await CourseDb.find();
+    const payments = await PaymentDb.find();
+    const user = userData.length;
+    const tutor = tutorData.length;
+    const course = courseDb.length;
+    const amounts = payments.map((payment) => payment.Amount);
+    console.log(payments, "payments");
+    console.log(amounts, "amounts");
+    
+    let sum = 0; // Initialize sum variable
+    for (let i = 0; i < amounts.length; i++) { // Fix syntax error in the loop
+        sum += amounts[i];
+    }
+    
+    const totalAmount = amounts.reduce((acc, curr) => acc + curr, 0);
+    
+
+    console.log(totalAmount, "totalAmount");
+
+    console.log(sum, "dddddddddddd");
+    res.json({ user, tutor, course, totalAmount });
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 module.exports = {
   loadloagin,
@@ -380,4 +409,5 @@ module.exports = {
   postOffer,
   loadOffer,
   fetchPaymentReport,
+  getDashboardData,
 };

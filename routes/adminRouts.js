@@ -18,6 +18,8 @@ adminRouter.put('/managecategory/:id',adminController.managecategory)
 adminRouter.post('/postOffer',adminController.postOffer)
 adminRouter.get('/loadOffer',adminController.loadOffer)
 adminRouter.get('/fetchPaymentReport',adminController.fetchPaymentReport)
+adminRouter.get('/getDashboardData',adminController.getDashboardData)
+
 
 
 

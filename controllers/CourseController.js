@@ -234,8 +234,8 @@ const successPayment = async (req, res) => {
   try {
     console.log(req.body, "oeooeoeoeooe");
     const { data } = req.body;
-    const { id, amount, date, userId, tutorId, courseId } = data;
-
+    const { id, amound, date, userId, tutorId, courseId } = data;
+   
     const user = await User.findOne({ email: userId });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -257,10 +257,11 @@ const successPayment = async (req, res) => {
         tutorId: tutorId,
         courseName: courseId,
         date: date,
-        Amount: amount,
+        Amount:amound,
       });
-
+      
       const saveData = await paymentData.save();
+      console.log(saveData,'saveDatasaveData');
 
       await User.updateOne(
         { email: userId },
