@@ -32,7 +32,22 @@ const CourseSchema=new mongoose.Schema({
         type:String,
         default:false
     },
-    
+    is_Active:{
+        type:String,
+        default:false
+    },
+    ratings:[{
+        star:Number,
+        postedby:{
+            type:mongoose.Schema.Types.ObjectId,ref:"Course"
+        },
+
+    }],
+    totelrating:{
+        type:String,
+        default:0
+    }
+ 
 })
 const Course=mongoose.model('Course',CourseSchema);
 module.exports=Course;

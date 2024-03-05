@@ -1,4 +1,3 @@
-const User = require("../models/userModel");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 module.exports = (req, res, next) => {

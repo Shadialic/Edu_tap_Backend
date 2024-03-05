@@ -30,6 +30,7 @@
     "otp-generator": "^4.0.1",
     "passport-google-oauth20": "^2.0.0",
     "socket.io": "^4.7.4",
+    "stripe": "^14.16.0",
     "uuid": "^9.0.1",
     "websocket": "^1.0.34"
   },

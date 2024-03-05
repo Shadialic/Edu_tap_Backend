@@ -12,7 +12,7 @@ const securePassword = async (password) => {
     const passwordHash = await bcrypt.hash(password, 10);
     return passwordHash;
   } catch (err) {
-    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -21,21 +21,13 @@ const addTutor = async (req, res) => {
     const { tutorName, email, password, phone, role } = req.body;
     const img = req.file.path;
     const data = await uploadToCloudinary(img, "course");
-
-    console.log(req.body, "lll");
-
-    // Check if all details are provided
     if (!tutorName || !email || !password || !phone) {
       return res.status(403).json({
         status: false,
         alert: "All fields are required",
       });
     }
-
-    // Check if user already exists
     const existingUser = await Tutor.findOne({ email: email });
-    console.log(existingUser, "existingUser");
-
     if (existingUser) {
       return res.json({
         alert: "email already exists",
@@ -43,9 +35,9 @@ const addTutor = async (req, res) => {
         status: false,
       });
     }
-
+    let hashedPassword;
     try {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      hashedPassword = await bcrypt.hash(password, 10);
     } catch (error) {
       return res.status(500).json({
         success: false,
@@ -70,7 +62,6 @@ const addTutor = async (req, res) => {
       status: true,
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
 };
@@ -99,17 +90,14 @@ const sendOTP = async (req, res) => {
       otp,
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
 };
-const verifyOTP = async (req, res) => {
 
+const verifyOTP = async (req, res) => {
   const otp = req.body.otp.toString();
   try {
-    // Check if user is already present
     const checkUserPresent = await OTP.findOne({ otp: otp });
-    console.log(checkUserPresent, "checkUserPresent");
     if (checkUserPresent) {
       const tutor = await Tutor.findOne({ email: checkUserPresent.email });
       return res.status(200).json({
@@ -120,24 +108,21 @@ const verifyOTP = async (req, res) => {
         status: true,
       });
     } else {
-      console.log("User not found");
       return res.json({ status: false, alert: "wrong Otp" });
     }
   } catch (error) {
-    console.error("Error while checking for user:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
 const verifyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body, "llllll");
     const exist = await Tutor.findOne({ email: email });
-    console.log(exist, "--1-1-1-1-");
     if (exist) {
       const compared = await bcrypt.compare(password, exist.password);
       if (exist.is_Actived === "approved") {
-        if (exist.is_Block === "true") {
+        if (exist.is_Block === "false") {
           if (compared) {
             const token = createSecretToken(exist._id);
             res.cookie("tutortoken", token, {
@@ -166,9 +151,10 @@ const verifyLogin = async (req, res) => {
       return res.json({ alert: "Email not Exist !" });
     }
   } catch (err) {
-    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 const gooleRegister = async (req, res) => {
   try {
     const { id, name, email, phone } = req.body;
@@ -208,42 +194,39 @@ const gooleRegister = async (req, res) => {
       res.json({ alert: "Please wait for admin approval before logging in" });
     }
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 const getCategory = async (req, res) => {
   try {
     const data = await CategoryDb.find();
     res.status(200).json({ newData: data });
   } catch (err) {
-    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 const manageProfile = async (req, res) => {
   try {
     const { email } = req.query;
-    console.log(req.body, "ddddddddddd", email);
     const tutorData = await Tutor.find({ email: email });
-    console.log(tutorData, "tutorData");
     res.json({ tutorData, alert: "sucsessfully get the data" });
   } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 const UpdateProfile = async (req, res) => {
   try {
-    console.log(req.body, "[[][][");
     const { email } = req.body;
     const img = req.file.path;
     const data = await uploadToCloudinary(img, "profile");
-    console.log(img, "sassa");
-    console.log(data, "sadatassa");
     const tutorData = await Tutor.findOneAndUpdate(
       { email: email },
       { $set: { image: data.url } },
       { new: true }
     );
-    console.log(tutorData, "userData");
     res.json({ tutorData, alert: "sucsessfully get the data" });
   } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
@@ -252,10 +235,9 @@ const UpdateProfile = async (req, res) => {
 
 const getCourse = async (req, res) => {
   try {
-    const { auter } = req.body;
-    const course = await CourseDb.findOne({ auther: auter });
+    const { author } = req.body;
+    const course = await CourseDb.find({ auther: author });
     if (course) {
-      console.log(course, "ppppppp");
       res.status(200).json({ success: true, course });
     } else {
       res.status(404).json({ success: false, message: "Course not found" });
@@ -264,20 +246,17 @@ const getCourse = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 const managecourse = async (req, res) => {
   try {
     const { id } = req.params;
-
     const result = await CourseDb.deleteOne({ _id: id });
     if (result.deletedCount === 1) {
-      console.log(`Document with ID ${id} deleted successfully.`);
       return res.json({ result, alert: "Course canceled successfully." });
     } else {
-      console.log(`Document with ID ${id} not found.`);
       return res.status(404).json({ alert: "Course not found." });
     }
   } catch (err) {
-    console.log(err);
     return res
       .status(500)
       .json({ alert: "An error occurred while canceling the course." });

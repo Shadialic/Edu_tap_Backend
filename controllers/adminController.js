@@ -2,18 +2,20 @@ const UserDb = require("../models/userModel");
 const TutorDb = require("../models/tutorModel");
 const Category = require("../models/categoryModel");
 const CourseDb = require("../models/courseModel");
-const bycrypt = require("bcrypt");
+const OfferDb = require("../models/offerModel");
+const PaymentDb = require("../models/paymentModle");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const mailSender = require("../utils/mailSender");
+const mailSender = require("../config/mailSender");
 
 const loadloagin = async (req, res) => {
   try {
     const { credential, password } = req.body;
     const exist = await UserDb.findOne({ email: credential });
     if (exist) {
-      if (exist.is_admin) {
-        const compared = await bycrypt.hash(password, exist.password);
+      if (exist.is_admin === "true") {
+        const compared = await bcrypt.compare(password, exist.password);
         if (compared) {
           const admintoken = jwt.sign(
             {
@@ -24,20 +26,22 @@ const loadloagin = async (req, res) => {
               expiresIn: "1h",
             }
           );
-          res.json({ loginData: exist, status: true, admintoken });
+          return res
+            .status(200)
+            .json({ loginData: exist, status: true, admintoken });
         } else {
-          res.json({ alert: "Enterd email is wrong!" });
+          return res.status(401).json({ alert: "Entered password is wrong!" });
         }
       } else {
-        res.json({ alert: "Not valid admin" });
+        return res.status(403).json({ alert: "Not a valid admin" });
       }
     } else {
-      res.json({ alert: "Email is not existing" });
+      return res.json({ alert: "Email does not exist" });
     }
   } catch (err) {
-    res.status(500).json({
-      status: false,
-      error: "Internal server error Lotta",
+    console.error(err);
+    return res.status(500).json({
+      error: "Internal server error",
     });
   }
 };
@@ -77,7 +81,6 @@ const loadtutor = async (req, res) => {
 const blockuser = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id, "idxx");
     const objectId = new mongoose.Types.ObjectId(id);
     const user = await UserDb.findOne({ _id: objectId });
     if (user.is_Active == "true") {
@@ -105,6 +108,7 @@ const blockuser = async (req, res) => {
     res.status(500).json({ alert: "Internal Server Error" });
   }
 };
+
 const blocktutor = async (req, res) => {
   try {
     const id = req.body._id;
@@ -118,7 +122,7 @@ const blocktutor = async (req, res) => {
       res.json({
         newData,
         status: true,
-        alert: "Unblocked Tutor",
+        alert: "blocked Tutor",
       });
     } else {
       const newData = await TutorDb.updateOne(
@@ -128,20 +132,19 @@ const blocktutor = async (req, res) => {
       res.json({
         newData,
         status: true,
-        alert: "Tutor Blocked",
+        alert: "unBlocked Tutor",
       });
     }
   } catch (err) {
     res.status(500).json({ alert: "Internal Server Error" });
   }
 };
+
 const approveTutor = async (req, res) => {
   try {
     const { _id, data } = req.body;
     const objectId = new mongoose.Types.ObjectId(_id);
-    
     const tutorData = await TutorDb.findById(objectId);
-
     if (tutorData) {
       if (data === "approved") {
         await TutorDb.updateOne({ _id: objectId }, { is_Actived: data });
@@ -157,7 +160,6 @@ const approveTutor = async (req, res) => {
            <p>Once again, congratulations and thank you for choosing Edu-tap!</p>
            <p>Best regards,<br/>Edu-tap Team</p>`
         );
-
         res.status(200).json({ tutorData, alert: "approved tutor" });
       } else if (data === "rejected") {
         tutorData.is_Actived = "rejected";
@@ -189,11 +191,9 @@ const approveTutor = async (req, res) => {
 const addCategory = async (req, res) => {
   try {
     const { categoryname } = req.body;
-
     const exist = await Category.findOne({
       categoryName: { $regex: new RegExp(categoryname, "i") },
     });
-
     if (exist) {
       return res.json({ alert: "Category already exists" });
     } else {
@@ -229,7 +229,6 @@ const loadCategory = async (req, res) => {
 const managecategory = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id, "ddds");
     const objectId = new mongoose.Types.ObjectId(id);
     const exist = await Category.findOne({ _id: objectId });
     if (exist && exist.is_Block === "false") {
@@ -271,6 +270,7 @@ const loadCourse = async (req, res) => {
     });
   }
 };
+
 const manageCourse = async (req, res) => {
   try {
     const id = req.body;
@@ -324,6 +324,74 @@ const blockCourse = async (req, res) => {
   }
 };
 
+const postOffer = async (req, res) => {
+  try {
+    const { category, percentage, startDate, expireDate } = req.body;
+
+    const offer = new OfferDb({
+      category: category,
+      Percentage: percentage,
+      startDate: startDate,
+      ExpireDate: expireDate,
+      status: true,
+    });
+    const savedOffer = await offer.save();
+    console.log(offer, "offeroffer", savedOffer);
+    res.json({ message: "Offer successfully added", data: savedOffer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const loadOffer = async (req, res) => {
+  try {
+    const categories = await OfferDb.find();
+    if (categories) {
+      res.json({ categories, status: true });
+    }
+  } catch (err) {
+    res.status(400).json({ alert: "intrnal server error" });
+  }
+};
+const fetchPaymentReport = async (req, res) => {
+  try {
+    const data = await PaymentDb.find();
+    res.json({ data });
+  } catch (err) {
+    res.status(400).json({ alert: "intrnal server error" });
+  }
+};
+const getDashboardData = async (req, res) => {
+  try {
+    const userData = await UserDb.find();
+    const tutorData = await TutorDb.find();
+    const courseDb = await CourseDb.find();
+    const payments = await PaymentDb.find();
+    const user = userData.length;
+    const tutor = tutorData.length;
+    const course = courseDb.length;
+    const amounts = payments.map((payment) => payment.Amount);
+    console.log(payments, "payments");
+    console.log(amounts, "amounts");
+    
+    let sum = 0; // Initialize sum variable
+    for (let i = 0; i < amounts.length; i++) { // Fix syntax error in the loop
+        sum += amounts[i];
+    }
+    
+    const totalAmount = amounts.reduce((acc, curr) => acc + curr, 0);
+    
+
+    console.log(totalAmount, "totalAmount");
+
+    console.log(sum, "dddddddddddd");
+    res.json({ user, tutor, course, totalAmount });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   loadloagin,
   loaduser,
@@ -338,4 +406,8 @@ module.exports = {
   getCourse,
   blockCourse,
   managecategory,
+  postOffer,
+  loadOffer,
+  fetchPaymentReport,
+  getDashboardData,
 };

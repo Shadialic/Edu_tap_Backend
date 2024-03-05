@@ -2,7 +2,6 @@ const nodemailer = require('nodemailer');
 
 const mailSender = async (email, title, body) => {
   try {
-    // Create a Transporter to send emails
     let transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
       auth: {
@@ -10,17 +9,15 @@ const mailSender = async (email, title, body) => {
         pass: process.env.MAIL_PASS,
       }
     });
-    // Send emails to users
     let info = await transporter.sendMail({
       from: process.env.MAIL_USER,
       to: email,
       subject: title,
       html: body,
     });
-    console.log("Email info: 11111111111111111111111111111111111111111111111", info);
     return info;
   } catch (error) {
-    console.log(error.message);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 module.exports = mailSender;
