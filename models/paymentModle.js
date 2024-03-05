@@ -1,9 +1,6 @@
 const mongoose = require('mongoose');
 
 const PaymentSchema =new mongoose.Schema({
-    PaymentId: {
-        type: String
-    },
     Amount: {
         type:Number
     },

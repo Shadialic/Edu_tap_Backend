@@ -150,26 +150,46 @@ const purchaseCourse = async (req, res) => {
 const enrollments = async (req, res) => {
   try {
     const { userId } = req.body;
+    console.log(userId, 'userIduserIduserId');
+    
     const userData = await User.find({ _id: userId });
+    
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
     const allCourseIds = new Set();
+    console.log(allCourseIds,'allCourseIdsallCourseIds'); 
     userData.forEach((user) => {
-      user.courses.forEach((course) => {
-        allCourseIds.add(course.courseId);
-      });
+      if (user.courses && user.courses.length > 0) {
+        user.courses.forEach((course) => {
+          if (course && course.courseId) {
+            allCourseIds.add(course.courseId.toString()); // Ensure courseIds are converted to strings
+          }
+        });
+      }
     });
+    
     const coursesData = await CourseDb.find({
+      // Assuming courseId is the correct field to match against in CourseDb
       _id: { $in: [...allCourseIds] },
     });
+    
+    console.log(coursesData, 'coursesData');
+    
     const chapter = await ChapterDb.find();
     const tutors = await TutorDb.find({ is_Actived: "approved" });
-    res
-      .status(200)
-      .json({ courses: coursesData, chapter, tutors, status: true });
+    
+    res.status(200).json({ courses: coursesData, chapter, tutors, status: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+
+
 
 const checkout = async (req, res) => {
   try {
@@ -235,7 +255,8 @@ const successPayment = async (req, res) => {
     console.log(req.body, "oeooeoeoeooe");
     const { data } = req.body;
     const { id, amound, date, userId, tutorId, courseId } = data;
-   
+
+
     const user = await User.findOne({ email: userId });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -252,16 +273,15 @@ const successPayment = async (req, res) => {
         .json({ message: "This course has already been purchased" });
     } else {
       const paymentData = new PaymentDb({
-        PaymentId: id,
         studentId: userId,
         tutorId: tutorId,
         courseName: courseId,
         date: date,
-        Amount:amound,
+        Amount: amound/100,
       });
-      
+
       const saveData = await paymentData.save();
-      console.log(saveData,'saveDatasaveData');
+      console.log(saveData, "saveDatasaveData");
 
       await User.updateOne(
         { email: userId },
@@ -366,25 +386,26 @@ const certificateAdded = async (req, res) => {
     const courses = await CourseDb.findOne({ _id: courseId });
 
     const courseName = courses.title;
-const courseImage = courses.image;
+    const courseImage = courses.image;
 
-const exist = await User.find(
-  { _id: userId, "Achivements.courseName": courseName }
-);
+    const exist = await User.find({
+      _id: userId,
+      "Achivements.courseName": courseName,
+    });
 
-if (exist.length === 0) {
-  const updateUser = await User.updateOne(
-    { _id: userId },
-    {
-      $push: {
-        Achivements: {
-          courseName: courseName,
-          courseImage: courseImage
+    if (exist.length === 0) {
+      const updateUser = await User.updateOne(
+        { _id: userId },
+        {
+          $push: {
+            Achivements: {
+              courseName: courseName,
+              courseImage: courseImage,
+            },
+          },
         }
-      }
+      );
     }
-  );
-}
 
     console.log(req.body, "===========");
   } catch (err) {

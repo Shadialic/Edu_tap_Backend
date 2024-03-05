@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const videoSchema = mongoose.Schema({
+
+const videoSchema = new mongoose.Schema({
   course_id: {
     type: String,
   },
@@ -9,6 +10,15 @@ const videoSchema = mongoose.Schema({
   chapterVideo: {
     type: String,
   },
+  file_path: { 
+    type: String, 
+    required: true 
+  },
+  status: { 
+    type: String, 
+    enum: ['pending', 'processing', 'completed', 'failed'], 
+    default: 'pending' 
+  },
   chapterTitle: {
     type: String,
   },
@@ -16,5 +26,7 @@ const videoSchema = mongoose.Schema({
     type: String,
   },
 });
-const video = mongoose.model("video", videoSchema);
-module.exports = video;
+
+const Video = mongoose.model("Video", videoSchema);
+
+module.exports = Video;
