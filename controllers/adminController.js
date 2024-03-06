@@ -336,7 +336,6 @@ const postOffer = async (req, res) => {
       status: true,
     });
     const savedOffer = await offer.save();
-    console.log(offer, "offeroffer", savedOffer);
     res.json({ message: "Offer successfully added", data: savedOffer });
   } catch (error) {
     console.error(error);
@@ -372,20 +371,11 @@ const getDashboardData = async (req, res) => {
     const tutor = tutorData.length;
     const course = courseDb.length;
     const amounts = payments.map((payment) => payment.Amount);
-    console.log(payments, "payments");
-    console.log(amounts, "amounts");
-    
-    let sum = 0; // Initialize sum variable
-    for (let i = 0; i < amounts.length; i++) { // Fix syntax error in the loop
-        sum += amounts[i];
+    let sum = 0; 
+    for (let i = 0; i < amounts.length; i++) {
+      sum += amounts[i];
     }
-    
     const totalAmount = amounts.reduce((acc, curr) => acc + curr, 0);
-    
-
-    console.log(totalAmount, "totalAmount");
-
-    console.log(sum, "dddddddddddd");
     res.json({ user, tutor, course, totalAmount });
   } catch (err) {
     console.log(err);

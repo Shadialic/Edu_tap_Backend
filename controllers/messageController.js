@@ -5,7 +5,6 @@ const GroupChatDb=require('../models/groupChatModel');
 const createMessage = async (req, res) => {
   try {
     const { data } = req.body;
-    console.log(data,'-=');
     const { chatId, senderId, text, recipientId,groupChat,isGroupChat,userName,userImage} = data;
     const message = new messageDb({
       chatId,
@@ -18,10 +17,7 @@ const createMessage = async (req, res) => {
     const saveMeassage = await message.save();
     if(isGroupChat){
       const data = await GroupChatDb.find({_id: groupChat});
-      console.log(data,'-------data');
-
       const membersAndCreatorsArray = data.flatMap(item => [item.members.map(member => member.toString()), item.creator.toString()]);
-
       const recipientSocketId = getGroupSocketId(membersAndCreatorsArray);
       io.to(recipientSocketId).emit("newMessage", saveMeassage);
     }else{

@@ -262,6 +262,17 @@ const managecourse = async (req, res) => {
       .json({ alert: "An error occurred while canceling the course." });
   }
 };
+const chekingTutor = async (req, res) => {
+  const { tutotId } = req.params;
+  try {
+    const exist = await Tutor.find({ _id: tutotId, is_Block: true });
+    if (exist) {
+      res.json({ status: true });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 module.exports = {
   securePassword,
@@ -275,4 +286,5 @@ module.exports = {
   UpdateProfile,
   getCourse,
   managecourse,
+  chekingTutor,
 };

@@ -53,8 +53,8 @@ const getCourse = async (req, res) => {
 const addChapter = async (req, res) => {
   try {
     const { id } = req.params;
-    const { chapterTitle, chapterDescription, demoVideo, chapterVideo } =
-      req.body;
+    const { chapterTitle, chapterDescription, demoVideo, chapterVideo } = req.body;
+
     const chapter = new ChapterDb({
       course_id: id,
       chapterTitle,
@@ -62,6 +62,7 @@ const addChapter = async (req, res) => {
       demoVideo,
       chapterVideo,
     });
+
     const saveData = await chapter.save();
     res.status(200).json({
       chapter: saveData,
@@ -69,9 +70,11 @@ const addChapter = async (req, res) => {
       message: "Chapter added successfully",
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 const getChapter = async (req, res) => {
   try {
@@ -150,76 +153,46 @@ const purchaseCourse = async (req, res) => {
 const enrollments = async (req, res) => {
   try {
     const { userId } = req.body;
-    console.log(userId, 'userIduserIduserId');
-    
     const userData = await User.find({ _id: userId });
-    
     if (!userData || userData.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
-    
-    const allCourseIds = new Set();
-    console.log(allCourseIds,'allCourseIdsallCourseIds'); 
+    const allCourseIds = new Set([]);
     userData.forEach((user) => {
       if (user.courses && user.courses.length > 0) {
         user.courses.forEach((course) => {
           if (course && course.courseId) {
-            allCourseIds.add(course.courseId.toString()); // Ensure courseIds are converted to strings
+            allCourseIds.add(course.courseId.toString());
           }
         });
       }
     });
-    
+
+    const courseIdsArray = [...allCourseIds];
     const coursesData = await CourseDb.find({
-      // Assuming courseId is the correct field to match against in CourseDb
-      _id: { $in: [...allCourseIds] },
+      _id: { $in: courseIdsArray.map((id) => new mongoose.Types.ObjectId(id)) },
     });
-    
-    console.log(coursesData, 'coursesData');
-    
     const chapter = await ChapterDb.find();
     const tutors = await TutorDb.find({ is_Actived: "approved" });
-    
-    res.status(200).json({ courses: coursesData, chapter, tutors, status: true });
+
+    res
+      .status(200)
+      .json({ courses: coursesData, chapter, tutors, status: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-
-
-
-
 const checkout = async (req, res) => {
   try {
     const { courseid } = req.body;
     const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
     const courseData = await CourseDb.findById(courseid);
     if (!courseData) {
       return res.status(404).json({ error: "Course not found" });
     }
     const amountInPaise = courseData.price * 100;
-    // const session = await stripe.checkout.sessions.create({
-    //   payment_method_types: ["card"],
-    //   line_items: [
-    //     {
-    //       price_data: {
-    //         currency: "inr",
-    //         product_data: {
-    //           name: "Course",
-    //         },
-    //         unit_amount: amountInPaise,
-    //       },
-    //       quantity: 1,
-    //     },
-    //   ],
-    //   mode: "payment",
-    //   success_url: "http://localhost:5173/success",
-    //   cancel_url: "https://localhost:5173/cancel",
-    // });
-
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInPaise,
       currency: "inr",
@@ -227,45 +200,29 @@ const checkout = async (req, res) => {
         enabled: true,
       },
     });
-    console.log(paymentIntent, "paymentIntent");
     return res.status(200).json({
       success: true,
       message: "client id passed to client",
       clientSecret: paymentIntent.client_secret,
       amountInPaise: amountInPaise,
     });
-
-    // const payment=new PaymentDb({
-    //   PaymentId:session.id,
-    //   date:new Date(),
-    //   Amount:session.amount_total,
-    // courseName,
-    // studentId,
-    // tutorId,
-
-    // })
-    // res.json({ sessionId: session.id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 const successPayment = async (req, res) => {
   try {
-    console.log(req.body, "oeooeoeoeooe");
     const { data } = req.body;
-    const { id, amound, date, userId, tutorId, courseId } = data;
-
-
+    const { amound, date, userId, tutorId, courseId, courseName } = data;
     const user = await User.findOne({ email: userId });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-
     const courseExists = user.courses.some(
       (course) => course.courseId === courseId
     );
-    console.log(courseExists, "courseExistscourseExists");
     if (courseExists) {
       console.log(courseExists);
       return res
@@ -275,19 +232,15 @@ const successPayment = async (req, res) => {
       const paymentData = new PaymentDb({
         studentId: userId,
         tutorId: tutorId,
-        courseName: courseId,
+        courseName: courseName,
         date: date,
-        Amount: amound/100,
+        Amount: amound / 100,
       });
-
       const saveData = await paymentData.save();
-      console.log(saveData, "saveDatasaveData");
-
       await User.updateOne(
         { email: userId },
         { $push: { courses: { courseId: courseId } } }
       );
-
       return res.status(200).json({
         success: true,
         message: "Course purchase successful",
@@ -301,10 +254,8 @@ const successPayment = async (req, res) => {
 };
 
 const courseRating = async (req, res) => {
-  console.log(req.body, "oeoeoeoeoeoeoeoe");
   const { data } = req.body;
   const { newValue, courseId, userId } = data;
-
   try {
     const data = await CourseDb.findOne({ _id: courseId });
     const exist = data.ratings.find(
@@ -336,13 +287,11 @@ const courseRating = async (req, res) => {
       .map((item) => item.star)
       .reduce((prev, curr) => prev + curr, 0);
     const actualRating = ratingSum / totalRating;
-    console.log(actualRating, "actualRating");
     const finalRating = await CourseDb.findByIdAndUpdate(
       { _id: courseId },
       { totelrating: actualRating },
       { new: true }
     );
-    console.log(finalRating, "finalRating");
 
     res.json(finalRating);
   } catch (err) {
@@ -353,14 +302,9 @@ const courseRating = async (req, res) => {
 
 const getRating = async (req, res) => {
   try {
-    console.log(req.params, "111111111111111111");
-
     const { id } = req.params;
     const courseId = String(id);
-    console.log(id, "111111111111111111");
-
     const rating = await CourseDb.findOne({ _id: courseId });
-    console.log(rating, "yourRating");
     res.json({ rating });
   } catch (err) {
     console.log(err);
@@ -371,7 +315,6 @@ const getRating = async (req, res) => {
 const fetchPaymentDetailes = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id, "sssssssssssssssss");
     const data = await PaymentDb.find({ tutorId: id });
     res.json({ data });
   } catch (err) {
@@ -384,10 +327,8 @@ const certificateAdded = async (req, res) => {
     const { data } = req.body;
     const { courseId, userId } = data;
     const courses = await CourseDb.findOne({ _id: courseId });
-
     const courseName = courses.title;
     const courseImage = courses.image;
-
     const exist = await User.find({
       _id: userId,
       "Achivements.courseName": courseName,
@@ -406,8 +347,6 @@ const certificateAdded = async (req, res) => {
         }
       );
     }
-
-    console.log(req.body, "===========");
   } catch (err) {
     console.log(err);
   }
