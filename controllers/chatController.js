@@ -138,6 +138,7 @@ const createGroupChat = async (req, res) => {
       image: data.url,
       members: [...receiverIds],
     });
+    console.log(createGroup, "createGroupcreateGroup");
     const saveData = await createGroup.save();
     res.json({ alert: "Group created successfully", data: saveData });
   } catch (err) {

@@ -28,7 +28,6 @@ const getGroupSocketId = (recipientIdsArray) => {
           (user) => user.userId.toString() === recipientId.toString()
         );
         if (socket) {
-          console.log(socket, "socketsocket");
           socketIds.push(socket.socketId);
         }
       }
@@ -36,7 +35,6 @@ const getGroupSocketId = (recipientIdsArray) => {
       const socket = onlineUsers.find(
         (user) => user.userId.toString() === recipientIds.toString()
       );
-      console.log(socket, "000000");
       if (socket) {
         socketIds.push(socket.socketId);
       }
@@ -44,25 +42,12 @@ const getGroupSocketId = (recipientIdsArray) => {
   }
   return socketIds;
 };
-// const getComments = (userIds) => {
-//   const comments = [];
-//   userIds.forEach((userId) => {
-//     const socket = onlineUsers.find((user) => user.userId === userId);
-//     if (socket) {
-//       comments.push({ userId: userId, socketId: socket.socketId });
-//     } else {
-//       comments.push({ userId: userId, socketId: null });
-//     }
-//   });
-//   return comments;
-// };
 
 io.on("connection", (socket) => {
   socket.on("addNewUser", (newUserId) => {
     if (!onlineUsers.some((user) => user.userId === newUserId)) {
       onlineUsers.push({ userId: newUserId, socketId: socket.id });
     }
-    console.log(onlineUsers, "llll");
     io.emit("getOnlineUsers", onlineUsers);
   });
   socket.on("disconnect", () => {
@@ -76,6 +61,5 @@ module.exports = {
   server,
   getRecipientSocketId,
   getGroupSocketId,
-  // getComments,
   io,
 };

@@ -19,6 +19,7 @@ const addReview = async (req, res) => {
     const savedReview = await newReview.save();
     res.json({ message: "Review successfully added", review: savedReview });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Failed to add review" });
   }
 };
@@ -29,6 +30,7 @@ const fetchReview = async (req, res) => {
     const chat = await chatDb.find();
     res.json({ data, chat });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -59,6 +61,8 @@ const getCommnets = async (req, res) => {
     const comments = await CommnetDb.find({ chapterId: id });
     res.json({ comments, status: true });
   } catch (err) {
+    console.log(err);
+
     res.status(500).json({ error: "Internal server error" });
   }
 };

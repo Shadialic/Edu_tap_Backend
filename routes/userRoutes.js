@@ -3,7 +3,7 @@ const userRouter = express();
 const authController = require("../controllers/authController");
 const profileController = require("../controllers/profileController");
 const viewController = require("../controllers/viewController");
-const Auth = require("../middleware/authMiddleware");
+const Auth = require("../middleware/AuthMiddleware");
 const upload = require("../middleware/multer");
 const CourseController = require("../controllers/courseController");
 const {

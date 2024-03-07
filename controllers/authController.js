@@ -257,19 +257,17 @@ const googleRegister = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-const checkUser=async(req,res)=>{
-  const {userId}=req.params;
-  console.log(userId,'dddddddddd');
-  try{
-    const exist = await User.find({ userId, is_Active: false });
-    console.log(exist,'existexistexist');
-    if(exist){
-      res.json({status:true})
+const checkUser = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const exist = await User.find({ _id: userId, is_Active: false });
+    if (exist.length > 0) {
+      res.json({ status: true });
     }
-  }catch(err){
+  } catch (err) {
     console.log(err);
   }
-}
+};
 module.exports = {
   adduser,
   verifyLogin,
@@ -279,5 +277,5 @@ module.exports = {
   passverifyOTP,
   updatePass,
   googleRegister,
-  checkUser
+  checkUser,
 };

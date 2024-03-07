@@ -1,4 +1,3 @@
-const Tutor = require("../models/tutorModel");
 const bcrypt = require("bcrypt");
 const OTP = require("../models/otpModel");
 const CourseDb = require("../models/courseModel");
@@ -6,6 +5,7 @@ const CategoryDb = require("../models/categoryModel");
 const otpGenerator = require("otp-generator");
 const { createSecretToken } = require("../utils/SecretToken");
 const { uploadToCloudinary } = require("../utils/cloudinary");
+const Tutor = require("../models/tutorModel");
 
 const securePassword = async (password) => {
   try {
@@ -263,16 +263,22 @@ const managecourse = async (req, res) => {
   }
 };
 const chekingTutor = async (req, res) => {
-  const { tutotId } = req.params;
+  const { id } = req.params;
   try {
-    const exist = await Tutor.find({ _id: tutotId, is_Block: true });
-    if (exist) {
-      res.json({ status: true });
+    if (!id) {
+      return res.status(400).json({ error: 'Missing or invalid tutor ID' });
     }
-  } catch (err) {
-    console.log(err);
+    const exist = await Tutor.findOne({ _id: id, is_Block: true });
+    if (exist) {
+      res.json({ status: true }); 
+    } else {
+      res.json({ status: false }); 
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 module.exports = {
   securePassword,

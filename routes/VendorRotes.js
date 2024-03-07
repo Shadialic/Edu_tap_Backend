@@ -12,7 +12,7 @@ vendorRouter.get('/vendor/getChapter',CourseController.getChapter);
 vendorRouter.get('/teacherUsers/:id',techerStudents);
 vendorRouter.get('/fetchPaymentDetailes/:id',CourseController.fetchPaymentDetailes);
 vendorRouter.get("/findTutorChats/:tutorId", findTutorChats);
-vendorRouter.get("/chekingTutor/:tutorId", vendorController.chekingTutor);
+vendorRouter.get("/chekingTutor/:id",vendorController.chekingTutor);
 
 
 // Post

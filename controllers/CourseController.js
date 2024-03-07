@@ -46,6 +46,8 @@ const getCourse = async (req, res) => {
     const category = await CategoryDb.find();
     res.json({ CourseData, category, status: true });
   } catch (err) {
+    console.log(err);
+
     res.status(500).json({ err: "Internal Server Error" });
   }
 };
@@ -81,6 +83,8 @@ const getChapter = async (req, res) => {
     const data = await ChapterDb.find();
     res.json({ data, status: 200 });
   } catch (err) {
+    console.log(err);
+
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
@@ -95,6 +99,7 @@ const manageChapter = async (req, res) => {
       return res.status(404).json({ alert: "Chapter not found." });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
@@ -136,6 +141,14 @@ const purchaseCourse = async (req, res) => {
     const user = await User.findOne({ _id: userid });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
+    }
+    const courseExists = user.courses.some(
+      (course) => course.courseId === id
+    );
+    if(courseExists){
+      return res
+      .status(201)
+      .json({ message: "This course has already been purchased" });
     }
     const updateResult = await User.updateOne(
       { _id: userid },
@@ -179,6 +192,8 @@ const enrollments = async (req, res) => {
       .status(200)
       .json({ courses: coursesData, chapter, tutors, status: true });
   } catch (err) {
+    console.log(err);
+
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -224,7 +239,6 @@ const successPayment = async (req, res) => {
       (course) => course.courseId === courseId
     );
     if (courseExists) {
-      console.log(courseExists);
       return res
         .status(201)
         .json({ message: "This course has already been purchased" });
@@ -303,14 +317,14 @@ const courseRating = async (req, res) => {
 const getRating = async (req, res) => {
   try {
     const { id } = req.params;
-    const courseId = String(id);
-    const rating = await CourseDb.findOne({ _id: courseId });
+    const courseId = String(id); 
+    const rating = await CourseDb.findOne({ _id:courseId }); 
     res.json({ rating });
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 const fetchPaymentDetailes = async (req, res) => {
   try {
@@ -318,7 +332,6 @@ const fetchPaymentDetailes = async (req, res) => {
     const data = await PaymentDb.find({ tutorId: id });
     res.json({ data });
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
