@@ -31,6 +31,8 @@ userRouter.get("/getCommnets/:id", viewController.getCommnets);
 userRouter.get("/getRating/:id", CourseController.getRating);
 userRouter.get("/getBlogs", viewController.getBlog);
 userRouter.get("/checkUser/:id",authController.checkUser);
+userRouter.get("/",(req,res)=>res.send('Hello world'));
+
 
 // Post
 userRouter.post("/signup", authController.adduser);
