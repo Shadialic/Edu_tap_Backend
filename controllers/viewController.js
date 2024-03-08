@@ -1,10 +1,10 @@
-const User = require("../models/userModel");
-const { uploadToCloudinary } = require("../utils/cloudinary");
-const ReviewDb = require("../models/reviewModel");
-const chatDb = require("../models/chatModel");
-const blogDb = require("../models/blogModel");
-const CommnetDb = require("../models/commentModel");
-const { io } = require("../socket/socket");
+const User = require("../models/userModel.js");
+const { uploadToCloudinary } = require("../utils/cloudinary.js");
+const ReviewDb = require("../models/reviewModel.js");
+const chatDb = require("../models/chatModel.js");
+const blogDb = require("../models/blogModel.js");
+const CommnetDb = require("../models/commentModel.js");
+const { io } = require("../socket/socket.js");
 
 const addReview = async (req, res) => {
   try {

@@ -1,10 +1,10 @@
-const CategoryDb = require("../models/categoryModel");
-const ChapterDb = require("../models/videoModel");
+const CategoryDb = require("../models/categoryModel.js");
+const ChapterDb = require("../models/videoModel.js");
 const mongoose = require("mongoose");
-const User = require("../models/userModel");
-const TutorDb = require("../models/tutorModel");
-const CourseDb = require("../models/courseModel");
-const PaymentDb = require("../models/paymentModle");
+const User = require("../models/userModel.js");
+const TutorDb = require("../models/tutorModel.js");
+const CourseDb = require("../models/courseModel.js");
+const PaymentDb = require("../models/paymentModle.js");
 const addCourse = async (req, res) => {
   try {
     const {

@@ -1,11 +1,11 @@
 const bcrypt = require("bcrypt");
-const OTP = require("../models/otpModel");
-const CourseDb = require("../models/courseModel");
-const CategoryDb = require("../models/categoryModel");
+const OTP = require("../models/otpModel.js");
+const CourseDb = require("../models/courseModel.js");
+const CategoryDb = require("../models/categoryModel.js");
 const otpGenerator = require("otp-generator");
-const { createSecretToken } = require("../utils/SecretToken");
-const { uploadToCloudinary } = require("../utils/cloudinary");
-const Tutor = require("../models/tutorModel");
+const { createSecretToken } = require("../utils/SecretToken.js");
+const { uploadToCloudinary } = require("../utils/cloudinary.js");
+const Tutor = require("../models/tutorModel.js");
 
 const securePassword = async (password) => {
   try {

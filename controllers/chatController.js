@@ -1,6 +1,6 @@
-const chatDb = require("../models/chatModel");
-const GroupChatDb = require("../models/groupChatModel");
-const { uploadToCloudinary } = require("../utils/cloudinary");
+const chatDb = require("../models/chatModel.js");
+const GroupChatDb = require("../models/groupChatModel.js");
+const { uploadToCloudinary } = require("../utils/cloudinary.js");
 const createChat = async (req, res) => {
   try {
     const { firstId, secondId } = req.body;

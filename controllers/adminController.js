@@ -1,13 +1,13 @@
-const UserDb = require("../models/userModel");
-const TutorDb = require("../models/tutorModel");
-const Category = require("../models/categoryModel");
-const CourseDb = require("../models/courseModel");
-const OfferDb = require("../models/offerModel");
-const PaymentDb = require("../models/paymentModle");
+const UserDb = require("../models/userModel.js");
+const TutorDb = require("../models/tutorModel.js");
+const Category = require("../models/categoryModel.js");
+const CourseDb = require("../models/courseModel.js");
+const OfferDb = require("../models/offerModel.js");
+const PaymentDb = require("../models/paymentModle.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const mailSender = require("../config/mailSender");
+const mailSender = require("../config/mailSender.js");
 
 const loadloagin = async (req, res) => {
   try {

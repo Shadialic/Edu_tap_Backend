@@ -1,6 +1,6 @@
-const messageDb = require("../models/messageModel");
-const { getRecipientSocketId,getGroupSocketId, io } = require("../socket/socket");
-const GroupChatDb=require('../models/groupChatModel');
+const messageDb = require("../models/messageModel.js");
+const { getRecipientSocketId,getGroupSocketId, io } = require("../socket/socket.js");
+const GroupChatDb=require('../models/groupChatModel.js');
 
 const createMessage = async (req, res) => {
   try {

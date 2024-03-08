@@ -1,5 +1,5 @@
-const User = require("../models/userModel");
-const { uploadToCloudinary } = require("../utils/cloudinary");
+const User = require("../models/userModel.js");
+const { uploadToCloudinary } = require("../utils/cloudinary.js");
 
 const getUser = async (req, res) => {
   try {

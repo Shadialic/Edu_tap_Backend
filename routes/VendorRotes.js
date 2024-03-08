@@ -1,9 +1,9 @@
 const express =require('express');
 const vendorRouter=express();
-const vendorController=require('../controllers/tutorController');
-const CourseController=require('../controllers/courseController')
-const upload=require('../middleware/multer')
-const {findTutorChats,techerStudents,createGroupChat}=require('../controllers/chatController')
+const vendorController=require('../controllers/TutorController.js');
+const CourseController=require('../controllers/CourseController.js')
+const upload=require('../middleware/multer.js')
+const {findTutorChats,techerStudents,createGroupChat}=require('../controllers/chatController.js')
 
 // Get
 vendorRouter.get('/vendor/getCategory',vendorController.getCategory)

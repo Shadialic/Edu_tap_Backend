@@ -1,8 +1,8 @@
-const User = require("../models/userModel");
+const User = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
-const OTP = require("../models/otpModel");
+const OTP = require("../models/otpModel.js");
 const otpGenerator = require("otp-generator");
-const { createSecretToken } = require("../utils/SecretToken");
+const { createSecretToken } = require("../utils/SecretToken.js");
 
 const securePassword = async (password) => {
   try {

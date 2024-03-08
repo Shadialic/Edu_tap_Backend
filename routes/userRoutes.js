@@ -1,21 +1,21 @@
 const express = require("express");
 const userRouter = express();
-const authController = require("../controllers/authController");
-const profileController = require("../controllers/profileController");
-const viewController = require("../controllers/viewController");
-const Auth = require("../middleware/AuthMiddleware");
-const upload = require("../middleware/multer");
-const CourseController = require("../controllers/courseController");
+const authController = require("../controllers/authController.js");
+const profileController = require("../controllers/profileController.js");
+const viewController = require("../controllers/viewController.js");
+const Auth = require("../middleware/AuthMiddleware.js");
+const upload = require("../middleware/multer.js");
+const CourseController = require("../controllers/CourseController.js");
 const {
   createChat,
   findUserChats,
   findChats,
   checkConnection
-} = require("../controllers/chatController");
+} = require("../controllers/chatController.js");
 const {
   createMessage,
   getMessage,
-} = require("../controllers/messageController");
+} = require("../controllers/messageController.js");
 
 
 //  Get
